@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-INFAQ | ELINA</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Menggunakan Titan One untuk font 3D kartun, dan Poppins untuk teks biasa -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Titan+One&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        blue: { 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8' },
+                        orange: { 500: '#F97316', 600: '#EA580C', 700: '#C2410C' },
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        display: ['"Titan One"', 'cursive'], /* Font baru untuk judul ELINA */
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0fdf4; color: #1f2937; }
+        
+        .glass { 
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(59, 130, 246, 0.08);
+        }
+        
+        .logo-3d { filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.15)) drop-shadow(0px 4px 6px rgba(0,0,0,0.1)); transition: transform 0.3s ease; }
+        .logo-3d:hover { transform: translateY(-3px) scale(1.05); }
+
+        /* Efek 3D Teks untuk Judul ELINA */
+        .text-3d-blue {
+            color: #3B82F6;
+            text-shadow: 
+                0 1px 0 #2563EB, 
+                0 2px 0 #1D4ED8, 
+                0 3px 0 #1E40AF, 
+                0 4px 0 #1E3A8A, 
+                0 7px 8px rgba(0,0,0,0.25);
+        }
+        .text-3d-orange {
+            color: #F97316;
+            text-shadow: 
+                0 1px 0 #EA580C, 
+                0 2px 0 #C2410C, 
+                0 3px 0 #9A3412, 
+                0 4px 0 #7C2D12, 
+                0 7px 8px rgba(0,0,0,0.25);
+        }
+        
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .btn-click { transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-click:active { transform: scale(0.92); }
+        
+        .float-emoji { animation: floatEmoji 3s ease-in-out infinite; display: inline-block; }
+        .bounce-emoji { animation: bounceEmoji 2.5s ease-in-out infinite; display: inline-block; }
+        @keyframes floatEmoji { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-6px) rotate(10deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+        @keyframes bounceEmoji { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.1); } }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        table { border-collapse: separate; border-spacing: 0; }
+        
+        .month-checkbox:checked + div { background-color: #3B82F6; color: white; border-color: #3B82F6; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-orange-50 min-h-screen flex flex-col relative overflow-x-hidden text-sm md:text-base">
+
+    <!-- HEADER GLOBAL -->
+    <header class="w-full text-center py-1.5 px-4 z-50 glass sticky top-0 border-b border-gray-200">
+        <p class="text-[10px] font-bold text-gray-400 tracking-widest">E-INFAQ | BY ZIVI•AI</p>
+        <div id="live-clock" class="text-xs font-medium text-gray-600 mt-0.5">Memuat Waktu...</div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <div id="app-container" class="flex-grow flex flex-col w-full max-w-7xl mx-auto p-3 md:p-6 mb-2">
+
+        <!-- VIEW: LOGIN -->
+        <div id="view-login" class="flex-grow flex flex-col items-center justify-center fade-in w-full max-w-md mx-auto">
+            
+            <img src="https://lh3.googleusercontent.com/d/1psvEKR4OwW81rTJEJByMpxvuU1xqSoc1" 
+                 alt="Logo Sekolah" 
+                 class="w-24 h-24 md:w-28 md:h-28 object-contain mb-2 logo-3d"
+                 onerror="this.src='https://ui-avatars.com/api/?name=Al+Kautsar&background=3B82F6&color=fff&rounded=true&size=150'">
+            
+            <div class="text-center mb-6">
+                <!-- Font 3D Baru -->
+                <h1 class="text-[3rem] md:text-[4rem] font-display tracking-widest leading-none mt-1 transform hover:scale-105 transition duration-300">
+                    <span class="text-3d-blue">E</span>
+                    <span class="text-3d-orange ml-1">LINA</span>
+                </h1>
+                <p class="text-xs md:text-sm font-bold text-gray-600 tracking-wide mt-2">Elektronik Infaq Al Kautsar</p>
+            </div>
+
+            <div class="glass w-full rounded-2xl p-5 shadow-xl relative overflow-hidden border border-gray-200/60">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-orange-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                
+                <div class="flex justify-center space-x-1 mb-4 bg-gray-100 p-1 rounded-lg border border-gray-200 shadow-inner">
+                    <button type="button" onclick="setLoginRole('admin')" id="tab-admin" class="btn-click flex-1 py-1.5 text-xs font-semibold rounded-md transition-all text-gray-500 hover:text-gray-800">Admin</button>
+                    <button type="button" onclick="setLoginRole('wali')" id="tab-wali" class="btn-click flex-1 py-1.5 text-xs font-semibold rounded-md transition-all text-gray-500 hover:text-gray-800">Wali Kelas</button>
+                    <button type="button" onclick="setLoginRole('murid')" id="tab-murid" class="btn-click flex-1 py-1.5 text-xs font-semibold rounded-md transition-all text-gray-500 hover:text-gray-800">Wali Murid</button>
+                </div>
+
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-3">
+                    <div id="form-group-admin" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">USERNAME</label>
+                            <div class="relative">
+                                <i class="fas fa-user-shield absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                <input type="text" id="admin-user" oninput="checkSavedCreds()" class="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition focus:shadow-[0_0_8px_rgba(59,130,246,0.2)]" placeholder="Masukkan username admin">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="form-group-wali" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">KELAS</label>
+                            <div class="relative">
+                                <i class="fas fa-chalkboard absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                <select id="wali-kelas" onchange="populateWaliNames()" class="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm transition focus:shadow-[0_0_8px_rgba(59,130,246,0.2)]">
+                                    <option value="">Pilih Kelas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">NAMA WALI KELAS</label>
+                            <div class="relative">
+                                <i class="fas fa-user-tie absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                <select id="wali-nama" onchange="checkSavedCreds()" class="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm bg-gray-50 transition focus:shadow-[0_0_8px_rgba(59,130,246,0.2)]">
+                                    <option value="">Pilih Wali Kelas</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="form-group-murid" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">KELAS</label>
+                            <div class="relative">
+                                <i class="fas fa-chalkboard absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                <select id="murid-kelas" onchange="populateMuridNames()" class="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm transition focus:shadow-[0_0_8px_rgba(59,130,246,0.2)]">
+                                    <option value="">Pilih Kelas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-500 mb-1">NAMA SISWA</label>
+                            <div class="relative">
+                                <i class="fas fa-child absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                                <select id="murid-nama" onchange="checkSavedCreds()" class="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-sm bg-gray-50 transition focus:shadow-[0_0_8px_rgba(59,130,246,0.2)]">
+                                    <option value="">Pilih Siswa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="form-group-kode">
+                        <label id="label-kode" class="block text-[11px] font-semibold text-gray-500 mb-1">KODE MASUK</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+                            <input type="password" id="login-kode" class="w-full pl-9 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm transition focus:shadow-[0_0_8px_rgba(249,115,22,0.2)]" placeholder="Masukkan KODE">
+                            <button type="button" onclick="togglePassword('login-kode')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 focus:outline-none btn-click">
+                                <i class="fas fa-eye" id="login-kode-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- REMEMBER ME CHECKBOX -->
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center text-[11px] font-semibold text-gray-500 cursor-pointer hover:text-blue-500 transition">
+                            <input type="checkbox" id="remember-me" class="mr-1.5 rounded text-blue-500 focus:ring-blue-500 w-3.5 h-3.5 border-gray-300 shadow-sm cursor-pointer">
+                            Ingat Username & Password
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-click w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-2.5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-2 text-sm">
+                        MASUK <i class="fas fa-sign-in-alt ml-1"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- PANTUN -->
+            <div class="relative w-full max-w-sm mx-auto text-center mt-4 fade-in">
+                <span class="absolute -top-3 -left-1 text-2xl bounce-emoji z-10 select-none">😸</span>
+                <span class="absolute -bottom-2 -right-1 text-2xl float-emoji z-10 select-none" style="animation-delay: 1s">✨</span>
+                <div class="bg-white/70 py-2.5 px-4 rounded-xl shadow-[0_0_8px_rgba(0,0,0,0.03)] border border-gray-200 relative overflow-hidden">
+                    <p id="pantun-text" class="italic text-gray-600 text-[11px] md:text-xs font-medium leading-relaxed z-0 relative"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: ADMIN -->
+        <div id="view-admin" class="hidden fade-in w-full max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.05)] border border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <img id="admin-foto-profil" src="" class="w-10 h-10 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-user-shield text-blue-500 mr-1 drop-shadow-sm"></i> Panel Admin</h2>
+                        <p class="text-xs text-gray-500">Kelola master data Infaq</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn-click bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-100 text-sm border border-red-100">Logout <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                <button onclick="downloadFormatExcel()" class="btn-click bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 p-2 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_8px_rgba(0,0,0,0.02)]">
+                    <i class="fas fa-download text-green-500 text-lg"></i><span class="text-[10px] font-bold">Unduh Format</span>
+                </button>
+                <label class="btn-click bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 p-2 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_8px_rgba(0,0,0,0.02)] cursor-pointer">
+                    <i class="fas fa-upload text-blue-500 text-lg"></i><span class="text-[10px] font-bold">Upload Data Baru</span>
+                    <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="uploadExcel(event)">
+                </label>
+                <button onclick="openSetNominalModal()" class="btn-click bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 p-2 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_8px_rgba(0,0,0,0.02)]">
+                    <i class="fas fa-money-bill-wave text-orange-500 text-lg"></i><span class="text-[10px] font-bold">Set Nominal</span>
+                </button>
+                <button onclick="openEditAccountModal()" class="btn-click bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 p-2 rounded-xl flex flex-col items-center justify-center gap-1 shadow-[0_0_8px_rgba(0,0,0,0.02)]">
+                    <i class="fas fa-user-edit text-gray-500 text-lg"></i><span class="text-[10px] font-bold">Edit/Reset Akun</span>
+                </button>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 p-2 rounded-lg flex gap-2 items-center justify-between mb-4 shadow-[0_0_8px_rgba(59,130,246,0.1)]">
+                <span class="text-xs font-bold text-blue-800 ml-2"><i class="fas fa-file-export mr-2"></i> Laporan (Excel)</span>
+                <div class="flex gap-2">
+                    <select id="admin-report-class" class="text-xs p-1 border rounded bg-white outline-none cursor-pointer">
+                        <option value="ALL">Semua Kelas</option>
+                    </select>
+                    <button onclick="downloadReport()" class="btn-click bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold shadow">Download</button>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl p-4 border border-gray-200">
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <h3 class="font-bold text-gray-700 text-sm md:text-base"><i class="fas fa-eye text-blue-500 mr-2 drop-shadow-sm"></i> Pantau Kelas</h3>
+                    <div class="flex space-x-2">
+                        <select id="admin-view-class" onchange="renderAdminClassView()" class="p-1.5 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white shadow-sm font-semibold text-sm cursor-pointer"></select>
+                        <button onclick="openAddStudentModal()" class="btn-click bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg font-medium hover:bg-blue-200 text-xs border border-blue-200"><i class="fas fa-user-plus mr-1"></i> Tambah Siswa</button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-3 mb-5">
+                    <div class="flex justify-between items-center bg-white border border-green-200 p-4 rounded-xl shadow-[0_0_10px_rgba(34,197,94,0.15)] relative overflow-hidden transition hover:scale-[1.01]">
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-green-500 shadow-[0_0_6px_#22c55e]"></div>
+                        <p class="text-xs font-bold text-green-600 ml-3">TOTAL MASUK</p>
+                        <p id="admin-tot-masuk" class="text-xl md:text-2xl font-bold text-green-700">Rp 0</p>
+                    </div>
+                    <div class="flex justify-between items-center bg-white border border-red-200 p-4 rounded-xl shadow-[0_0_10px_rgba(239,68,68,0.15)] relative overflow-hidden transition hover:scale-[1.01]">
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-red-500 shadow-[0_0_6px_#ef4444]"></div>
+                        <p class="text-xs font-bold text-red-600 ml-3">TOTAL KELUAR</p>
+                        <p id="admin-tot-keluar" class="text-xl md:text-2xl font-bold text-red-700">Rp 0</p>
+                    </div>
+                    <div class="flex justify-between items-center bg-white border border-blue-200 p-4 rounded-xl shadow-[0_0_12px_rgba(59,130,246,0.2)] relative overflow-hidden transition hover:scale-[1.01]">
+                        <div class="absolute left-0 top-0 w-2 h-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div>
+                        <p class="text-sm font-bold text-blue-800 ml-3 drop-shadow-sm">SISA SALDO</p>
+                        <p id="admin-tot-saldo" class="text-2xl md:text-3xl font-display text-blue-700 tracking-wide drop-shadow-[0_2px_4px_rgba(59,130,246,0.2)]">Rp 0</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-[0_0_8px_rgba(0,0,0,0.03)]">
+                    <table class="w-full text-left border-collapse" id="admin-table"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: WALI KELAS -->
+        <div id="view-walikelas" class="hidden fade-in w-full">
+            
+            <div class="flex flex-col md:flex-row justify-between items-center bg-white p-3 md:p-4 rounded-xl shadow-[0_0_10px_rgba(59,130,246,0.05)] border border-gray-100 mb-4 gap-3">
+                <div class="flex items-center space-x-3 w-full md:w-auto">
+                    <img id="wali-foto-profil" src="" alt="Foto Wali" class="w-14 h-14 object-cover rounded-full border-2 border-blue-200 logo-3d shadow-sm bg-gray-50">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 uppercase leading-none" id="wali-title-kelas">KELAS -</h2>
+                        <p class="text-xs font-semibold text-gray-500 uppercase mt-1"><i class="fas fa-user-tie text-blue-500 mr-1 drop-shadow-sm"></i> <span id="wali-title-nama">Nama Wali</span></p>
+                    </div>
+                </div>
+                <div class="flex space-x-2 w-full md:w-auto justify-end">
+                    <button onclick="contactAdmin()" class="btn-click bg-green-50 text-green-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-green-100 transition shadow-sm text-xs flex items-center border border-green-200"><i class="fab fa-whatsapp mr-1 text-sm"></i> Admin</button>
+                    <button onclick="logout()" class="btn-click bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-100 transition shadow-sm text-xs border border-red-200">Keluar <i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3 mb-5">
+                <div class="flex justify-between items-center bg-white border border-green-200 p-4 rounded-xl shadow-[0_0_10px_rgba(34,197,94,0.15)] relative overflow-hidden">
+                    <div class="absolute left-0 top-0 w-1.5 h-full bg-green-500 shadow-[0_0_6px_#22c55e]"></div>
+                    <p class="text-xs font-bold text-green-600 ml-3">TOTAL MASUK</p>
+                    <p id="wali-tot-masuk" class="text-xl font-bold text-green-700">Rp 0</p>
+                </div>
+                <div class="flex justify-between items-center bg-white border border-red-200 p-4 rounded-xl shadow-[0_0_10px_rgba(239,68,68,0.15)] relative overflow-hidden">
+                    <div class="absolute left-0 top-0 w-1.5 h-full bg-red-500 shadow-[0_0_6px_#ef4444]"></div>
+                    <p class="text-xs font-bold text-red-600 ml-3">TOTAL KELUAR</p>
+                    <p id="wali-tot-keluar" class="text-xl font-bold text-red-700">Rp 0</p>
+                </div>
+                <div class="flex justify-between items-center bg-white border border-blue-200 p-4 rounded-xl shadow-[0_0_12px_rgba(59,130,246,0.2)] relative overflow-hidden">
+                    <div class="absolute left-0 top-0 w-2 h-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div>
+                    <p class="text-sm font-bold text-blue-800 ml-3 drop-shadow-sm">SISA SALDO</p>
+                    <p id="wali-tot-saldo" class="text-2xl font-display text-blue-700 drop-shadow-[0_2px_4px_rgba(59,130,246,0.2)]">Rp 0</p>
+                </div>
+            </div>
+
+            <div class="glass p-3 rounded-xl border border-gray-200 flex flex-col md:flex-row justify-between items-center mb-5 gap-3">
+                <div class="flex items-center space-x-2 w-full md:w-auto">
+                    <label class="font-bold text-gray-700 text-xs">Pilih Bulan:</label>
+                    <button onclick="openMonthSelector()" class="btn-click bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-50 transition shadow-inner text-xs flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] md:max-w-[200px]" id="wali-month-display">
+                        Pilih Bulan 📅
+                    </button>
+                </div>
+                <div class="flex space-x-2 w-full md:w-auto flex-wrap md:flex-nowrap justify-end">
+                    <button onclick="downloadWaliReport()" class="btn-click flex-1 md:flex-none bg-green-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-green-600 transition shadow-[0_0_8px_rgba(34,197,94,0.3)] text-xs"><i class="fas fa-file-excel mr-1"></i>Laporan</button>
+                    <button onclick="openPengeluaranModal()" class="btn-click flex-1 md:flex-none bg-orange-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-orange-600 transition shadow-[0_0_8px_rgba(249,115,22,0.3)] text-xs"><i class="fas fa-minus-circle mr-1"></i>Pengeluaran</button>
+                    <button onclick="viewPengeluaranHistory()" class="btn-click w-full md:w-auto mt-2 md:mt-0 bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-50 transition shadow-sm text-xs"><i class="fas fa-list mr-1"></i>Riwayat</button>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl border border-gray-200 shadow-[0_0_10px_rgba(0,0,0,0.03)] overflow-hidden bg-white">
+                <div class="p-2.5 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+                    <p class="text-xs font-bold text-blue-800"><i class="fas fa-calendar-check mr-1 drop-shadow-sm"></i> Ceklist Infaq</p>
+                </div>
+                <div class="overflow-x-auto w-full max-h-[600px] overflow-y-auto relative">
+                    <table class="w-full text-left text-sm" id="wali-checklist-table"></table>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex space-x-4 text-[10px] font-medium text-gray-600 justify-center flex-wrap gap-y-2">
+                <span class="flex items-center"><div class="w-4 h-4 bg-green-500 text-white rounded flex items-center justify-center mr-1 shadow-sm"><i class="fas fa-check text-[8px]"></i></div> Sudah</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-red-50 text-red-500 border border-red-300 rounded flex items-center justify-center mr-1 shadow-inner"><i class="fas fa-times text-[8px]"></i></div> Libur (Tidak Ada Infaq)</span>
+                <span class="flex items-center"><div class="w-4 h-4 bg-gray-50 border border-gray-200 rounded mr-1 shadow-sm"></div> Kosong</span>
+            </div>
+        </div>
+
+        <!-- VIEW: WALI MURID (Elegan & Compact List) -->
+        <div id="view-walimurid" class="hidden fade-in w-full max-w-lg mx-auto">
+            <div class="glass rounded-2xl overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.1)] border border-gray-200 bg-white">
+                
+                <div class="bg-gradient-to-br from-blue-600 to-blue-500 p-5 text-center text-white relative">
+                    <button onclick="logout()" class="btn-click absolute top-3 right-3 bg-white/20 hover:bg-white/30 p-1.5 rounded-full transition text-xs"><i class="fas fa-sign-out-alt"></i></button>
+                    <!-- Avatar Animasi Bot/Robot Lucu -->
+                    <img id="murid-foto-profil" src="" alt="Foto Siswa" class="w-24 h-24 mx-auto object-cover mb-2 drop-shadow-md bg-blue-50 rounded-full border-4 border-white/50">
+                    <h2 class="text-xl font-display tracking-wide leading-tight mt-1">SDIT MUHAMMADIYAH<br>AL-KAUTSAR</h2>
+                    <p class="text-blue-100 text-xs font-semibold mt-2 tracking-widest">LAPORAN INFAQ SISWA</p>
+                </div>
+                
+                <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">NAMA SISWA</p>
+                        <h3 class="text-sm font-bold text-gray-800 uppercase" id="murid-title-nama">Nama</h3>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-gray-400 mb-0.5">KELAS / KODE</p>
+                        <p class="text-xs font-bold text-orange-600 drop-shadow-sm" id="murid-title-kelas">1A / 01</p>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-gray-700 text-xs">Riwayat Bulan</h4>
+                        <button onclick="openMonthSelector()" class="btn-click bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-blue-50 transition shadow-inner text-[11px] max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis" id="murid-month-display">
+                            Pilih Bulan 📅
+                        </button>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 flex justify-between items-center shadow-[0_0_10px_rgba(59,130,246,0.15)] relative overflow-hidden">
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-blue-500 shadow-[0_0_6px_#3b82f6]"></div>
+                        <span class="text-xs font-bold text-blue-800 ml-1">Total Terpilih:</span>
+                        <span class="text-base font-bold text-blue-600" id="murid-total-bulan">Rp 0</span>
+                    </div>
+
+                    <div id="murid-jumat-list"></div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 text-[10px] text-gray-400 font-medium px-4">
+                Data sinkronisasi otomatis sesuai pengisian Wali Kelas.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let db = {
+            config: { defaultNominal: {} },
+            users: { admin: [{ username: 'admin', kode: 'admin123', foto: '' }], wali: [], murid: [] },
+            infaq: {}, pengeluaran: {}
+        };
+
+        let session = { role: null, user: null, selectedMonths: [new Date().toISOString().slice(0, 7)] };
+
+        const PANTUN_LIST = [
+            `"Jalan-jalan ke kota tua, Jangan lupa beli pepaya.<br><span class="text-blue-500">Walau uang saku tak seberapa, Infaq jumat wajib dijaga ya!</span>"`,
+            `"Beli seblak level dewa, Pedasnya bikin meringis.<br><span class="text-blue-500">Sisihkan harta buat sesama, Biar pahala makin berlapis manis!</span>"`,
+            `"Main TikTok sampai pagi, Bangun tidur mata berair.<br><span class="text-blue-500">Jangan lupa infaq hari ini, Biar rezeki mengalir cair!</span>"`,
+            `"Anak senja minum kopi, Sambil dengerin lagu galau.<br><span class="text-blue-500">Daripada uang habis tak pasti, Mending infaq biar berkilau!</span>"`,
+            `"Beli kuota buat mabar, Malah sinyalnya hilang timbul.<br><span class="text-blue-500">Sedekah itu bikin sabar, Pahala numpuk di alam kubur kumpul!</span>"`
+        ];
+
+        /* --- Sapaan Random Lucu untuk Tombol WA --- */
+        const WA_MESSAGES = [
+            "Hayoo... kangen Admin ya? 😂",
+            "Cieee mau chat Admin... ada yang bisa dibantu bestie? 😎",
+            "Adminnya lagi ngopi, tapi tetep bakal bales kok! ☕🚀",
+            "Siap laksanakan! Meneruskan keluh kesah ke Admin... 🏃‍♂️💨",
+            "Sabar ya, Admin bukan robot (walau kadang balesnya cepet banget) 🤖💖",
+            "Nggak sabar nunggu balesan Admin? Sama, aku juga! 😆",
+            "Panggilan kepada Admin! Ada Wali Kelas kece mau ngomong nih! 📞✨"
+        ];
+
+        /* --- INITIALIZATION --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            initClock(); initPantun(); loadDB();
+            const savedSession = sessionStorage.getItem('elina_session');
+            if(savedSession) {
+                session = JSON.parse(savedSession);
+                if(!Array.isArray(session.selectedMonths)) session.selectedMonths = [new Date().toISOString().slice(0, 7)];
+                routeView();
+            } else { setLoginRole('admin'); routeView(); }
+        });
+
+        function initClock() {
+            const clockEl = document.getElementById('live-clock');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' };
+            setInterval(() => { clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB"; }, 1000);
+            clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB";
+        }
+
+        function initPantun() { document.getElementById('pantun-text').innerHTML = PANTUN_LIST[Math.floor(Math.random() * PANTUN_LIST.length)]; }
+
+        function loadDB() {
+            const local = localStorage.getItem('elina_db');
+            if(local) { 
+                db = JSON.parse(local); 
+                if(!db.users.admin[0].foto) db.users.admin[0].foto = "";
+            } else {
+                db.users.wali.push({ kelas: '1A', nama: 'Ust. Budi', kode: '123', nominal: 2000, foto: "" });
+                db.users.murid.push({ kelas: '1A', presensi: '01', nama: 'Ahmad', kode: '01', foto: "" });
+                db.users.murid.push({ kelas: '1A', presensi: '02', nama: 'Fatimah', kode: '02', foto: "" });
+                db.config.defaultNominal['1A'] = 2000; saveDB();
+            }
+        }
+        function saveDB() { localStorage.setItem('elina_db', JSON.stringify(db)); }
+
+        function routeView() {
+            ['view-login', 'view-admin', 'view-walikelas', 'view-walimurid'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+            if(!session.user) { document.getElementById('view-login').classList.remove('hidden'); updateLoginDropdowns(); } 
+            else if (session.role === 'admin') { document.getElementById('view-admin').classList.remove('hidden'); setupAdminView(); } 
+            else if (session.role === 'wali') { document.getElementById('view-walikelas').classList.remove('hidden'); setupWaliView(); } 
+            else if (session.role === 'murid') { document.getElementById('view-walimurid').classList.remove('hidden'); setupMuridView(); }
+        }
+
+        /* --- LOGIN LOGIC WITH SAVE PASSWORD --- */
+        let currentLoginTab = 'admin';
+        function setLoginRole(role) {
+            currentLoginTab = role;
+            ['admin', 'wali', 'murid'].forEach(r => {
+                const btn = document.getElementById(`tab-${r}`);
+                if(r === role) { btn.classList.add('bg-white', 'shadow', 'text-blue-600'); btn.classList.remove('text-gray-500', 'hover:text-gray-800'); } 
+                else { btn.classList.remove('bg-white', 'shadow', 'text-blue-600'); btn.classList.add('text-gray-500', 'hover:text-gray-800'); }
+            });
+
+            ['form-group-admin', 'form-group-wali', 'form-group-murid'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`form-group-${role}`).classList.remove('hidden');
+            
+            const lblKode = document.getElementById('label-kode');
+            if(role === 'murid') lblKode.textContent = "KODE MASUK (KODE SISWA)";
+            else if(role === 'wali') lblKode.textContent = "KODE MASUK (KODE GURU)";
+            else lblKode.textContent = "KODE MASUK (PASSWORD ADMIN)";
+            updateLoginDropdowns();
+            checkSavedCreds();
+        }
+
+        function updateLoginDropdowns() {
+            if(currentLoginTab === 'wali') {
+                const kelasSel = document.getElementById('wali-kelas'), classes = [...new Set(db.users.wali.map(w => w.kelas))].sort();
+                kelasSel.innerHTML = '<option value="">Pilih Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('wali-nama').innerHTML = '<option value="">Pilih Wali Kelas</option>';
+            } else if (currentLoginTab === 'murid') {
+                const kelasSel = document.getElementById('murid-kelas'), classes = [...new Set(db.users.murid.map(m => m.kelas))].sort();
+                kelasSel.innerHTML = '<option value="">Pilih Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('murid-nama').innerHTML = '<option value="">Pilih Siswa</option>';
+            }
+        }
+
+        function populateWaliNames() {
+            const kls = document.getElementById('wali-kelas').value, namaSel = document.getElementById('wali-nama');
+            if(!kls) { namaSel.innerHTML = '<option value="">Pilih Wali Kelas</option>'; checkSavedCreds(); return; }
+            const walis = db.users.wali.filter(w => w.kelas === kls);
+            namaSel.innerHTML = '<option value="">Pilih Wali Kelas</option>' + walis.map(w => `<option value="${w.nama}">${w.nama}</option>`).join('');
+            if(walis.length === 1) namaSel.value = walis[0].nama;
+            checkSavedCreds();
+        }
+
+        function populateMuridNames() {
+            const kls = document.getElementById('murid-kelas').value, namaSel = document.getElementById('murid-nama');
+            if(!kls) { namaSel.innerHTML = '<option value="">Pilih Siswa</option>'; checkSavedCreds(); return; }
+            const murids = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            namaSel.innerHTML = '<option value="">Pilih Siswa</option>' + murids.map(m => `<option value="${m.presensi}">${m.presensi} - ${m.nama}</option>`).join('');
+            if(murids.length === 1) namaSel.value = murids[0].presensi;
+            checkSavedCreds();
+        }
+
+        function togglePassword(id) {
+            const el = document.getElementById(id), icon = document.getElementById(id+'-eye');
+            if(el.type === 'password') { el.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); } 
+            else { el.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        }
+
+        function checkSavedCreds() {
+            const saved = JSON.parse(localStorage.getItem('elina_saved_creds')) || { admin: {}, wali: {}, murid: {} };
+            const kodeInput = document.getElementById('login-kode');
+            const rememberChk = document.getElementById('remember-me');
+            let pass = null;
+
+            if (currentLoginTab === 'admin') {
+                const user = document.getElementById('admin-user').value; pass = saved.admin[user];
+            } else if (currentLoginTab === 'wali') {
+                const kls = document.getElementById('wali-kelas').value, nm = document.getElementById('wali-nama').value;
+                if (kls && nm) pass = saved.wali[kls + '_' + nm];
+            } else if (currentLoginTab === 'murid') {
+                const kls = document.getElementById('murid-kelas').value, nm = document.getElementById('murid-nama').value;
+                if (kls && nm) pass = saved.murid[kls + '_' + nm];
+            }
+
+            if (pass) { kodeInput.value = pass; rememberChk.checked = true; } else { kodeInput.value = ''; rememberChk.checked = false; }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault(); const kode = document.getElementById('login-kode').value;
+            let loggedInRole = null; let loggedInUser = null;
+
+            if(currentLoginTab === 'admin') {
+                const user = document.getElementById('admin-user').value;
+                const match = db.users.admin.find(a => a.username === user && a.kode === kode);
+                if(match) { loggedInRole = 'admin'; loggedInUser = match; }
+            } else if (currentLoginTab === 'wali') {
+                const kls = document.getElementById('wali-kelas').value, nm = document.getElementById('wali-nama').value;
+                const match = db.users.wali.find(w => w.kelas === kls && w.nama === nm && w.kode === kode);
+                if(match) { loggedInRole = 'wali'; loggedInUser = match; }
+            } else if (currentLoginTab === 'murid') {
+                const kls = document.getElementById('murid-kelas').value, pres = document.getElementById('murid-nama').value;
+                const match = db.users.murid.find(m => m.kelas === kls && m.presensi === pres && m.kode === kode);
+                if(match) { loggedInRole = 'murid'; loggedInUser = match; }
+            }
+
+            if(loggedInUser) { 
+                session.role = loggedInRole; session.user = loggedInUser;
+                sessionStorage.setItem('elina_session', JSON.stringify(session));
+                
+                let saved = JSON.parse(localStorage.getItem('elina_saved_creds')) || { admin: {}, wali: {}, murid: {} };
+                const isRemember = document.getElementById('remember-me').checked;
+                if (currentLoginTab === 'admin') {
+                    const user = document.getElementById('admin-user').value;
+                    if(isRemember) saved.admin[user] = kode; else delete saved.admin[user];
+                } else if (currentLoginTab === 'wali') {
+                    const kls = document.getElementById('wali-kelas').value, nm = document.getElementById('wali-nama').value;
+                    if(isRemember) saved.wali[kls + '_' + nm] = kode; else delete saved.wali[kls + '_' + nm];
+                } else if (currentLoginTab === 'murid') {
+                    const kls = document.getElementById('murid-kelas').value, nm = document.getElementById('murid-nama').value;
+                    if(isRemember) saved.murid[kls + '_' + nm] = kode; else delete saved.murid[kls + '_' + nm];
+                }
+                localStorage.setItem('elina_saved_creds', JSON.stringify(saved));
+                
+                document.getElementById('login-kode').value = ''; 
+                Swal.fire({
+                    html: '<div class="text-[3rem] bounce-emoji mb-3">🚀😎</div><div class="text-xl font-bold text-gray-800">Masuk Pak Eko!</div><p class="text-sm text-gray-500 mt-1">Siap memantau data infaq hari ini~</p>',
+                    showConfirmButton: false, timer: 1500, customClass:{popup:'rounded-2xl w-[85%] max-w-xs border border-gray-100 shadow-xl'}
+                }).then(() => { routeView(); });
+            } else {
+                Swal.fire({
+                    html: '<div class="text-[3rem] float-emoji mb-3">🙈😂</div><div class="text-lg font-bold text-red-600">Waduh! Nyasar Bang?</div><p class="text-[11px] text-gray-500 mt-2">Data atau kodenya salah nih.<br>Coba cek lagi deh, jangan sampai typo!</p>',
+                    showConfirmButton: true, confirmButtonText: 'Okeee 👍', buttonsStyling: false,
+                    customClass:{popup:'rounded-2xl w-[85%] max-w-xs border border-gray-100 shadow-xl', confirmButton: 'btn-click mt-3 bg-blue-500 text-white px-6 py-2 rounded-xl text-xs font-bold'}
+                });
+            }
+        }
+
+        function logout() {
+            session = { role: null, user: null, selectedMonths: [new Date().toISOString().slice(0, 7)] };
+            sessionStorage.removeItem('elina_session'); routeView();
+        }
+
+        /* --- CONTACT ADMIN (WA) FUNCTION --- */
+        function contactAdmin() {
+            const randomMsg = WA_MESSAGES[Math.floor(Math.random() * WA_MESSAGES.length)];
+            
+            Swal.fire({
+                html: `<div class="text-[3.5rem] bounce-emoji mb-4 drop-shadow-md">📱</div>
+                       <div class="text-lg font-bold text-gray-800 mb-2">${randomMsg}</div>`,
+                showCancelButton: true,
+                confirmButtonText: 'Iya, Lanjut Gas! 🚀',
+                cancelButtonText: 'Gak Jadi 🙈',
+                customClass: { 
+                    popup: 'rounded-2xl w-[85%] max-w-xs border border-gray-100 shadow-xl', 
+                    confirmButton: 'btn-click bg-green-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md w-full mb-2',
+                    cancelButton: 'btn-click bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-xs font-bold w-full',
+                    actions: 'flex flex-col w-full px-4'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open('https://wa.me/6287847702772', '_blank');
+                }
+            });
+        }
+
+        /* --- DATE & UTILS --- */
+        function getFridays(year, month) {
+            let d = new Date(year, month - 1, 1), fridays = [];
+            while (d.getMonth() === month - 1) { if (d.getDay() === 5) fridays.push(new Date(d.getTime())); d.setDate(d.getDate() + 1); }
+            return fridays;
+        }
+        function formatRupiah(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount); }
+        function getNominalKelas(kelas) { return db.config.defaultNominal[kelas] || 2000; }
+        function formatMonthID(YYYYMM) {
+            const [y, m] = YYYYMM.split('-'); const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            return `${months[parseInt(m)-1]} ${y}`;
+        }
+
+        /* --- MONTH SELECTOR (GLOBAL) --- */
+        function updateMonthDisplay() {
+            const dispId = session.role === 'wali' ? 'wali-month-display' : 'murid-month-display';
+            const disp = document.getElementById(dispId);
+            if(!disp) return;
+            if(!session.selectedMonths || session.selectedMonths.length === 0) {
+                disp.innerHTML = 'Pilih Bulan 📅';
+            } else {
+                const txt = session.selectedMonths.sort().map(m => formatMonthID(m)).join(', ');
+                disp.innerHTML = `<span class="font-bold">${txt}</span> <i class="fas fa-caret-down ml-1"></i>`;
+            }
+        }
+
+        function openMonthSelector() {
+            const now = new Date(); let startYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+            let html = '<div class="grid grid-cols-3 gap-2 text-left mt-3">';
+            for(let i=0; i<12; i++) {
+                let d = new Date(startYear, 6 + i, 1), mVal = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                let mTxt = formatMonthID(mVal), checked = session.selectedMonths.includes(mVal) ? 'checked' : '';
+                html += `<label class="relative cursor-pointer"><input type="checkbox" class="peer sr-only month-checkbox" value="${mVal}" ${checked}>
+                    <div class="p-2 border border-gray-300 rounded-lg text-center text-xs font-semibold text-gray-600 transition peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 hover:bg-gray-50">${mTxt}</div></label>`;
+            }
+            html += '</div>';
+
+            Swal.fire({
+                title: '<span class="text-base font-bold">Pilih Bulan Tampil</span>', html: html, showCancelButton: true, confirmButtonText: 'Terapkan', cancelButtonText: 'Batal',
+                customClass: { popup: 'rounded-2xl w-[95%] max-w-md', confirmButton: 'btn-click bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm' }, buttonsStyling: false,
+                preConfirm: () => {
+                    const checked = Array.from(document.querySelectorAll('.month-checkbox:checked')).map(cb => cb.value);
+                    if(checked.length === 0) { Swal.showValidationMessage('Pilih minimal 1 bulan'); return false; }
+                    return checked;
+                }
+            }).then(res => {
+                if(res.isConfirmed) {
+                    session.selectedMonths = res.value; sessionStorage.setItem('elina_session', JSON.stringify(session));
+                    updateMonthDisplay();
+                    if(session.role === 'wali') renderWaliChecklist(); else if(session.role === 'murid') renderMuridView();
+                }
+            });
+        }
+
+        /* --- WALI KELAS VIEW LOGIC --- */
+        function setupWaliView() {
+            document.getElementById('wali-title-kelas').textContent = `KELAS ${session.user.kelas}`;
+            document.getElementById('wali-title-nama').textContent = session.user.nama;
+            
+            const imgEl = document.getElementById('wali-foto-profil');
+            if(session.user.foto && session.user.foto.trim() !== '') { imgEl.src = session.user.foto; } 
+            else { imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.nama)}&background=3B82F6&color=fff&bold=true`; }
+
+            updateMonthDisplay(); renderWaliChecklist();
+        }
+
+        function renderWaliChecklist() {
+            if(!session.selectedMonths || session.selectedMonths.length === 0) return;
+            const kelas = session.user.kelas, nominal = getNominalKelas(kelas);
+            const students = db.users.murid.filter(m => m.kelas === kelas).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            if(!db.infaq[kelas]) db.infaq[kelas] = {};
+
+            let allFridays = [];
+            session.selectedMonths.sort().forEach(monthStr => {
+                const [year, month] = monthStr.split('-'); allFridays = allFridays.concat(getFridays(parseInt(year), parseInt(month)));
+            });
+
+            const table = document.getElementById('wali-checklist-table');
+            
+            // Penguncian Ukuran Kolom Secara Pixel-Perfect
+            let thead = `<thead class="bg-gray-50 text-gray-700"><tr>
+                <th class="p-2 border-b text-center w-[35px] min-w-[35px] sticky left-0 z-30 bg-gray-50 shadow-[1px_0_0_#e5e7eb]">No</th>
+                <th class="p-2 border-b text-left w-[120px] min-w-[120px] max-w-[120px] sticky left-[35px] z-30 bg-gray-50 shadow-[1px_0_0_#e5e7eb]">Nama Siswa</th>
+                <th class="p-2 border-b text-center w-[75px] min-w-[75px] bg-blue-50 sticky left-[155px] z-30 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Total<br><span class="text-[10px] font-normal">Rp</span></th>`;
+            
+            allFridays.forEach((f) => {
+                const fStr = f.toISOString().split('T')[0], dText = `${f.getDate()}/${f.getMonth()+1}`;
+                if(!db.infaq[kelas][fStr]) db.infaq[kelas][fStr] = {};
+                
+                let hasLibur = students.length > 0 && students.some(st => db.infaq[kelas][fStr][st.presensi] === 'libur');
+                let btnLibur = hasLibur
+                    ? `<button onclick="toggleGlobalLibur('${kelas}', '${fStr}', true)" class="btn-click mt-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-[9px] font-bold shadow-[0_0_8px_rgba(239,68,68,0.4)]"><i class="fas fa-undo"></i> Batal Libur</button>`
+                    : `<button onclick="toggleGlobalLibur('${kelas}', '${fStr}', false)" class="btn-click mt-1 bg-white text-red-500 border border-red-200 px-1.5 py-0.5 rounded text-[9px] hover:bg-red-50 font-bold shadow-[0_2px_4px_rgba(0,0,0,0.05)]"><i class="fas fa-ban"></i> Libur</button>`;
+
+                thead += `<th class="p-1 border-b text-center text-[10px] w-[75px] min-w-[75px] border-r"><span class="font-bold text-gray-600">Jumat, ${dText}</span><br>${btnLibur}</th>`;
+            });
+            thead += `</tr></thead>`;
+
+            let tbody = `<tbody>`, classTotalMasuk = 0;
+            students.forEach((s) => {
+                let studentTotal = 0;
+                Object.keys(db.infaq[kelas]).forEach(dateStr => { if(db.infaq[kelas][dateStr][s.presensi] === 'paid') { studentTotal += nominal; classTotalMasuk += nominal; } });
+
+                // Kolom Data Solid Background
+                tbody += `<tr class="hover:bg-blue-50 transition border-b group">
+                    <td class="p-1 text-center text-gray-500 text-xs font-semibold sticky left-0 z-10 bg-white group-hover:bg-blue-50 shadow-[1px_0_0_#e5e7eb] w-[35px] min-w-[35px]">${s.presensi}</td>
+                    <td class="p-1 text-xs font-bold text-gray-800 whitespace-nowrap truncate sticky left-[35px] z-10 bg-white group-hover:bg-blue-50 shadow-[1px_0_0_#e5e7eb] w-[120px] min-w-[120px] max-w-[120px]" title="${s.nama}">${s.nama}</td>
+                    <td class="p-1 text-center font-bold text-green-600 bg-green-50 whitespace-nowrap text-xs sticky left-[155px] z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[75px] min-w-[75px]">${formatRupiah(studentTotal).replace('Rp','').trim()}</td>`;
+                
+                allFridays.forEach(f => {
+                    const fStr = f.toISOString().split('T')[0], status = db.infaq[kelas][fStr][s.presensi];
+                    let cellContent = '';
+                    
+                    if (status === 'libur') {
+                        cellContent = `<div class="w-6 h-6 rounded flex items-center justify-center mx-auto bg-red-50 text-red-400 border border-red-200"><i class="fas fa-times text-[10px]"></i></div>`;
+                    } else if (status === 'paid') {
+                        cellContent = `<button onclick="toggleInfaq('${kelas}', '${fStr}', '${s.presensi}')" class="check-btn btn-click w-6 h-6 rounded flex items-center justify-center mx-auto bg-green-500 text-white shadow-[0_0_8px_rgba(34,197,94,0.4)] transform scale-105"><i class="fas fa-check text-[10px]"></i></button>`;
+                    } else {
+                        cellContent = `<button onclick="toggleInfaq('${kelas}', '${fStr}', '${s.presensi}')" class="check-btn btn-click w-6 h-6 rounded border border-gray-300 bg-gray-50 text-transparent hover:bg-gray-100 flex items-center justify-center mx-auto shadow-sm"><i class="fas fa-check text-[10px]"></i></button>`;
+                    }
+                    tbody += `<td class="p-1 border-r text-center w-[75px] min-w-[75px]">${cellContent}</td>`;
+                });
+                tbody += `</tr>`;
+            });
+            tbody += `</tbody>`; table.innerHTML = thead + tbody; updateWallet(kelas, classTotalMasuk);
+        }
+
+        function toggleInfaq(kelas, dateStr, presensi) {
+            let current = db.infaq[kelas][dateStr][presensi];
+            if (current === 'paid') delete db.infaq[kelas][dateStr][presensi]; else db.infaq[kelas][dateStr][presensi] = 'paid';
+            saveDB(); renderWaliChecklist();
+        }
+
+        function toggleGlobalLibur(kelas, dateStr, isCurrentlyLibur) {
+            if (isCurrentlyLibur) {
+                const students = db.users.murid.filter(m => m.kelas === kelas);
+                students.forEach(s => { if(db.infaq[kelas][dateStr][s.presensi] === 'libur') delete db.infaq[kelas][dateStr][s.presensi]; });
+                saveDB(); renderWaliChecklist();
+            } else {
+                Swal.fire({
+                    title: '<span class="text-base font-bold">Tandai Tidak Ada Infaq?</span>', text: 'Seluruh siswa pada tanggal ini akan otomatis ditandai silang merah (Libur Infaq).', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Tandai', cancelButtonText: 'Batal',
+                    customClass: { popup: 'rounded-xl w-[90%] max-w-sm', confirmButton: 'btn-click bg-red-500 text-white px-4 py-2 rounded-lg text-sm', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm' }, buttonsStyling: false
+                }).then((res) => {
+                    if(res.isConfirmed) {
+                        const students = db.users.murid.filter(m => m.kelas === kelas); students.forEach(s => { db.infaq[kelas][dateStr][s.presensi] = 'libur'; });
+                        saveDB(); renderWaliChecklist();
+                    }
+                });
+            }
+        }
+
+        function updateWallet(kelas, totalMasuk) {
+            const p = db.pengeluaran[kelas] || [], totalKeluar = p.reduce((sum, item) => sum + item.amount, 0), saldo = totalMasuk - totalKeluar;
+            document.getElementById('wali-tot-masuk').textContent = formatRupiah(totalMasuk);
+            document.getElementById('wali-tot-keluar').textContent = formatRupiah(totalKeluar);
+            document.getElementById('wali-tot-saldo').textContent = formatRupiah(saldo);
+        }
+
+        function downloadWaliReport() {
+            if(!session.selectedMonths || session.selectedMonths.length === 0) {
+                Swal.fire({icon: 'warning', title: 'Pilih Bulan', text: 'Silakan pilih bulan yang akan didownload.', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                return;
+            }
+            generateReportForClass(session.user.kelas, true);
+        }
+
+        function openPengeluaranModal() {
+            Swal.fire({
+                title: '<span class="text-base font-bold">Input Pengeluaran</span>',
+                html: `<div class="flex flex-col gap-3 text-left mt-2"><input type="date" id="swal-p-date" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-inner" value="${new Date().toISOString().split('T')[0]}"><input type="text" id="swal-p-desc" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 shadow-inner" placeholder="Ket (misal: Beli Sapu)"><input type="number" id="swal-p-amount" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 shadow-inner" placeholder="Nominal (misal: 15000)"></div>`,
+                confirmButtonText: 'Simpan', showCancelButton: true, cancelButtonText: 'Batal',
+                customClass: { popup: 'rounded-xl w-[90%] max-w-sm', confirmButton: 'btn-click bg-orange-500 text-white px-4 py-2 rounded-lg text-sm shadow', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm' }, buttonsStyling: false,
+                preConfirm: () => { return { date: document.getElementById('swal-p-date').value, desc: document.getElementById('swal-p-desc').value, amount: parseInt(document.getElementById('swal-p-amount').value) } }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = result.value; if(!data.desc || !data.amount) return Swal.fire({icon: 'error', title: 'Data tidak lengkap', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                    const kelas = session.user.kelas; if(!db.pengeluaran[kelas]) db.pengeluaran[kelas] = []; db.pengeluaran[kelas].push({ id: Date.now().toString(), date: data.date, desc: data.desc, amount: data.amount });
+                    saveDB(); renderWaliChecklist(); Swal.fire({icon: 'success', title: 'Tersimpan', showConfirmButton: false, timer: 1000, customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                }
+            });
+        }
+
+        function viewPengeluaranHistory() {
+            const kelas = session.user.kelas, p = db.pengeluaran[kelas] || [];
+            if(p.length === 0) return Swal.fire({icon: 'info', title: 'Belum ada data', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+            let html = `<div class="max-h-60 overflow-y-auto text-left text-xs"><table class="w-full"><tr class="bg-gray-100"><th class="p-2">Tgl</th><th class="p-2">Ket</th><th class="p-2 text-right">Rp</th><th class="p-1"></th></tr>`;
+            p.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+                html += `<tr class="border-b"><td class="p-2 whitespace-nowrap">${item.date.slice(5)}</td><td class="p-2 truncate max-w-[100px]">${item.desc}</td><td class="p-2 text-right text-red-600 font-bold whitespace-nowrap">${formatRupiah(item.amount).replace('Rp','').trim()}</td><td class="p-1 text-center"><button onclick="deletePengeluaran('${item.id}')" class="btn-click text-red-500 hover:text-red-700 bg-red-50 p-1 rounded"><i class="fas fa-trash text-[10px]"></i></button></td></tr>`;
+            }); html += `</table></div>`;
+
+            window.deletePengeluaran = (id) => { db.pengeluaran[kelas] = db.pengeluaran[kelas].filter(x => x.id !== id); saveDB(); renderWaliChecklist(); Swal.close(); setTimeout(viewPengeluaranHistory, 200); };
+            Swal.fire({ title: '<span class="text-base font-bold">Riwayat</span>', html: html, showConfirmButton: false, showCloseButton: true, customClass: {popup: 'rounded-xl w-[95%] max-w-md'} });
+        }
+
+        /* --- WALI MURID VIEW LOGIC (ELEGANT COMPACT GRID) --- */
+        function setupMuridView() {
+            document.getElementById('murid-title-nama').textContent = session.user.nama;
+            document.getElementById('murid-title-kelas').textContent = `${session.user.kelas} / ${session.user.presensi}`;
+            
+            const imgMurid = document.getElementById('murid-foto-profil');
+            if(session.user.foto && session.user.foto.trim() !== '') {
+                imgMurid.src = session.user.foto;
+            } else {
+                // Animasi karakter 3D (Bottts-Neutral) agar lucu seperti Baymax/Robot anak kekinian
+                imgMurid.src = `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(session.user.nama)}&backgroundColor=b6e3f4,ffdfbf,c0aede,ffd5dc&radius=50`;
+            }
+
+            updateMonthDisplay(); renderMuridView();
+        }
+
+        function renderMuridView() {
+            if(!session.selectedMonths || session.selectedMonths.length === 0) return;
+            const kls = session.user.kelas, presensi = session.user.presensi, nominal = getNominalKelas(kls);
+            let monthTotal = 0, listHTML = '';
+            
+            session.selectedMonths.sort().forEach(monthStr => {
+                const [year, month] = monthStr.split('-');
+                const fridays = getFridays(parseInt(year), parseInt(month));
+                
+                listHTML += `<div class="mb-5"><div class="inline-block bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-1 rounded-md mb-2 shadow-sm uppercase tracking-wider">${formatMonthID(monthStr)}</div><div class="grid grid-cols-2 gap-2">`;
+
+                fridays.forEach((f) => {
+                    const fStr = f.toISOString().split('T')[0], status = (db.infaq[kls] && db.infaq[kls][fStr]) ? db.infaq[kls][fStr][presensi] : null;
+                    let styleClass = 'bg-gray-50 border-gray-200', textRp = '-', colorRp = 'text-gray-400';
+
+                    if (status === 'paid') {
+                        styleClass = 'bg-green-50 border-green-200'; textRp = formatRupiah(nominal); colorRp = 'text-green-600'; monthTotal += nominal;
+                    } else if (status === 'libur') {
+                        styleClass = 'bg-red-50 border-red-200'; textRp = 'Libur'; colorRp = 'text-red-500';
+                    }
+
+                    listHTML += `<div class="${styleClass} border rounded-lg p-2 flex justify-between items-center shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:shadow-md transition">
+                        <span class="text-[10px] text-gray-500 font-semibold whitespace-nowrap">Tgl ${f.getDate()}</span><span class="text-xs font-bold ${colorRp} whitespace-nowrap">${textRp}</span>
+                    </div>`;
+                });
+                listHTML += `</div></div>`;
+            });
+
+            document.getElementById('murid-jumat-list').innerHTML = listHTML;
+            document.getElementById('murid-total-bulan').textContent = formatRupiah(monthTotal);
+        }
+
+        /* --- ADMIN LOGIC --- */
+        function setupAdminView() {
+            const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort(), viewSel = document.getElementById('admin-view-class'), reportSel = document.getElementById('admin-report-class');
+            let opts = classes.map(c => `<option value="${c}">Kelas ${c}</option>`).join('');
+            viewSel.innerHTML = (classes.length > 0) ? opts : '<option value="">Kosong</option>'; reportSel.innerHTML = '<option value="ALL">Semua Kelas</option>' + opts;
+            
+            const imgAdmin = document.getElementById('admin-foto-profil');
+            if(db.users.admin[0].foto && db.users.admin[0].foto.trim() !== '') { imgAdmin.src = db.users.admin[0].foto; } 
+            else { imgAdmin.src = `https://api.dicebear.com/9.x/initials/svg?seed=Admin&backgroundColor=3B82F6`; }
+            
+            if(classes.length > 0) renderAdminClassView();
+        }
+
+        function renderAdminClassView() {
+            const kls = document.getElementById('admin-view-class').value; if(!kls) return;
+            const nominal = getNominalKelas(kls), students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            let totalMasuk = 0, tbody = '';
+            students.forEach(s => {
+                let stTot = 0; if(db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => { if(db.infaq[kls][d][s.presensi] === 'paid') { stTot += nominal; totalMasuk += nominal; } }); }
+                tbody += `<tr class="border-b hover:bg-gray-50 text-xs md:text-sm"><td class="p-2 text-center">${s.presensi}</td><td class="p-2 font-bold">${s.nama}</td><td class="p-2 font-mono text-gray-500">${s.kode}</td><td class="p-2 text-right font-semibold text-green-600">${formatRupiah(stTot)}</td></tr>`;
+            });
+            const p = db.pengeluaran[kls] || [], totalKeluar = p.reduce((s, i) => s + i.amount, 0);
+            document.getElementById('admin-tot-masuk').textContent = formatRupiah(totalMasuk); document.getElementById('admin-tot-keluar').textContent = formatRupiah(totalKeluar); document.getElementById('admin-tot-saldo').textContent = formatRupiah(totalMasuk - totalKeluar);
+            document.getElementById('admin-table').innerHTML = `<thead class="bg-gray-100 text-xs"><tr><th class="p-2 text-center w-10">Pres.</th><th class="p-2">Nama Siswa</th><th class="p-2">Kode</th><th class="p-2 text-right">Total Infaq</th></tr></thead><tbody>${tbody}</tbody>`;
+        }
+
+        function openSetNominalModal() {
+            let html = '<div class="space-y-2 text-left mt-2 max-h-64 overflow-y-auto pr-1">';
+            const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort();
+            classes.forEach(c => { html += `<div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border text-sm shadow-inner"><span class="font-bold text-gray-700">Kelas ${c}</span><input type="number" id="nom-${c}" value="${getNominalKelas(c)}" class="border rounded p-1.5 w-24 text-right font-mono focus:ring-1 focus:ring-orange-500 outline-none"></div>`; }); html += '</div>';
+            Swal.fire({ title: '<span class="text-base font-bold">Set Nominal (Rp)</span>', html: html, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-xl w-[90%] max-w-sm', confirmButton: 'btn-click bg-orange-500 text-white px-4 py-2 rounded-lg text-sm shadow', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm' }, buttonsStyling: false, preConfirm: () => { let res = {}; classes.forEach(c => { res[c] = parseInt(document.getElementById(`nom-${c}`).value) || 0; }); return res; }
+            }).then(result => { if(result.isConfirmed) { db.config.defaultNominal = result.value; saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-xl w-[80%] max-w-xs'}}); } });
+        }
+
+        window.updateEditUserList = () => {
+            const role = document.getElementById('edit-role').value, sel = document.getElementById('edit-user-select'), fields = document.getElementById('edit-fields');
+            sel.classList.add('hidden'); fields.classList.add('hidden'); if(!role) return;
+            let opts = '<option value="">-- Pilih Akun --</option>';
+            if(role === 'admin') { db.users.admin.forEach((a, i) => opts += `<option value="${i}">${a.username}</option>`); } else if(role === 'wali') { db.users.wali.forEach((w, i) => opts += `<option value="${i}">Kelas ${w.kelas} - ${w.nama}</option>`); } else if(role === 'murid') { db.users.murid.forEach((m, i) => opts += `<option value="${i}">Kelas ${m.kelas} - ${m.presensi} - ${m.nama}</option>`); }
+            sel.innerHTML = opts; sel.classList.remove('hidden');
+        }
+
+        window.updateEditFields = () => {
+            const role = document.getElementById('edit-role').value, idx = document.getElementById('edit-user-select').value, fields = document.getElementById('edit-fields');
+            if(idx === '') { fields.classList.add('hidden'); return; } fields.classList.remove('hidden');
+            const elKelas = document.getElementById('edit-kelas'), elId = document.getElementById('edit-id'), elNama = document.getElementById('edit-nama'), elPass = document.getElementById('edit-pass'), elFoto = document.getElementById('edit-foto');
+            elFoto.style.display = 'block'; // Aktifkan input foto untuk semuanya
+            if(role === 'admin') { elKelas.style.display = 'none'; elNama.style.display = 'none'; elId.style.display = 'block'; elId.placeholder = "Username"; elId.value = db.users.admin[idx].username; elPass.value = db.users.admin[idx].kode; elFoto.value = db.users.admin[idx].foto || ""; } 
+            else if (role === 'wali') { const u = db.users.wali[idx]; elKelas.style.display = 'block'; elNama.style.display = 'block'; elId.style.display = 'none'; elKelas.value = u.kelas; elNama.value = u.nama; elPass.value = u.kode; elFoto.value = u.foto || ""; } 
+            else if (role === 'murid') { const u = db.users.murid[idx]; elKelas.style.display = 'block'; elNama.style.display = 'block'; elId.style.display = 'block'; elId.placeholder = "No Presensi"; elKelas.value = u.kelas; elId.value = u.presensi; elNama.value = u.nama; elPass.value = u.kode; elFoto.value = u.foto || ""; }
+        }
+
+        function openEditAccountModal() {
+            Swal.fire({ title: '<span class="text-base font-bold">Edit Akun</span>',
+                html: `<div class="flex flex-col gap-3 mt-4 text-left"><select id="edit-role" onchange="window.updateEditUserList()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50 shadow-inner"><option value="">-- Pilih Akses --</option><option value="wali">Wali Kelas</option><option value="murid">Wali Murid</option><option value="admin">Admin</option></select><select id="edit-user-select" onchange="window.updateEditFields()" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50 shadow-inner hidden"></select><div id="edit-fields" class="flex-col gap-2 hidden border-t border-gray-200 pt-3 mt-1"><input type="text" id="edit-kelas" class="w-full p-2 border border-gray-300 rounded-lg text-sm shadow-inner" placeholder="Kelas (misal: 1A)"><input type="text" id="edit-id" class="w-full p-2 border border-gray-300 rounded-lg text-sm shadow-inner" placeholder="Presensi / Username"><input type="text" id="edit-nama" class="w-full p-2 border border-gray-300 rounded-lg text-sm shadow-inner" placeholder="Nama Lengkap"><input type="url" id="edit-foto" class="w-full p-2 border border-gray-300 rounded-lg text-sm shadow-inner" placeholder="URL Link Foto (opsional)"><input type="text" id="edit-pass" class="w-full p-2.5 border border-orange-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-orange-500 font-bold text-orange-600 bg-orange-50 shadow-inner mt-1" placeholder="KODE PASSWORD"></div></div>`,
+                showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-2xl w-[90%] max-w-sm p-4', confirmButton: 'btn-click bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-semibold', actions: 'w-full flex gap-2 justify-center mt-4' }, buttonsStyling: false, preConfirm: () => { const role = document.getElementById('edit-role').value, idx = document.getElementById('edit-user-select').value; if(!role || idx === '') return false; return { role, idx, kelas: document.getElementById('edit-kelas').value, id: document.getElementById('edit-id').value, nama: document.getElementById('edit-nama').value, pass: document.getElementById('edit-pass').value, foto: document.getElementById('edit-foto').value } }
+            }).then(res => {
+                if(res.isConfirmed && res.value) {
+                    const data = res.value; if(!data.pass) return Swal.fire({icon:'error', title:'Kode kosong', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                    if(data.role === 'admin') { db.users.admin[data.idx].username = data.id; db.users.admin[data.idx].kode = data.pass; db.users.admin[data.idx].foto = data.foto; } 
+                    else if (data.role === 'wali') { db.users.wali[data.idx].kelas = data.kelas; db.users.wali[data.idx].nama = data.nama; db.users.wali[data.idx].kode = data.pass; db.users.wali[data.idx].foto = data.foto; } 
+                    else if (data.role === 'murid') { db.users.murid[data.idx].kelas = data.kelas; db.users.murid[data.idx].presensi = data.id; db.users.murid[data.idx].nama = data.nama; db.users.murid[data.idx].kode = data.pass; db.users.murid[data.idx].foto = data.foto; }
+                    saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1500, customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                }
+            });
+        }
+
+        function openAddStudentModal() {
+            const kls = document.getElementById('admin-view-class').value;
+            Swal.fire({ title: `<span class="text-base font-bold">Tambah Siswa Kelas ${kls}</span>`, html: `<div class="flex flex-col gap-3 text-left mt-2"><input type="text" id="add-s-presensi" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 shadow-inner" placeholder="No Presensi (misal: 35)"><input type="text" id="add-s-nama" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 shadow-inner" placeholder="Nama Lengkap"><input type="text" id="add-s-kode" class="w-full p-2 border rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500 shadow-inner" placeholder="Kode Login"></div>`, showCancelButton: true, confirmButtonText: 'Tambah', cancelButtonText: 'Batal', customClass: { popup: 'rounded-xl w-[90%] max-w-sm', confirmButton: 'btn-click bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm' }, buttonsStyling: false, preConfirm: () => { return { presensi: document.getElementById('add-s-presensi').value, nama: document.getElementById('add-s-nama').value, kode: document.getElementById('add-s-kode').value } }
+            }).then(res => {
+                if(res.isConfirmed) {
+                    const data = res.value; if(!data.presensi || !data.nama || !data.kode) return Swal.fire({icon:'error', title:'Data tidak lengkap', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                    if(db.users.murid.find(m => m.kelas === kls && m.presensi === data.presensi)) return Swal.fire({icon:'error', title:'Presensi sudah ada', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                    db.users.murid.push({ kelas: kls, presensi: data.presensi, nama: data.nama, kode: data.kode, foto: "" }); saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Berhasil', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-xl w-[80%] max-w-xs'}});
+                }
+            });
+        }
+
+        /* --- EXPORT/IMPORT --- */
+        function downloadFormatExcel() {
+            const wb = XLSX.utils.book_new();
+            const adminData = db.users.admin.map(a => ({ Username: a.username, Kode: a.kode, Link_Foto: a.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(adminData), "ADMIN");
+            const waliData = db.users.wali.map(w => ({ Kelas: w.kelas, Nama_Wali: w.nama, Kode_Login: w.kode, Nominal_Default: getNominalKelas(w.kelas), Link_Foto: w.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(waliData.length > 0 ? waliData : [{Kelas:'1A', Nama_Wali:'Ust. Budi', Kode_Login:'123', Nominal_Default:2000, Link_Foto: ""}]), "WALI_KELAS");
+            const muridData = db.users.murid.map(m => ({ Kelas: m.kelas, Presensi: m.presensi, Nama_Siswa: m.nama, Kode_Login: m.kode, Link_Foto: m.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(muridData.length > 0 ? muridData : [{Kelas:'1A', Presensi:'01', Nama_Siswa:'Ahmad', Kode_Login:'01', Link_Foto: ""}]), "WALI_MURID");
+            XLSX.writeFile(wb, "Format_Data_ELINA.xlsx");
+        }
+
+        function uploadExcel(e) {
+            const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = evt.target.result; const wb = XLSX.read(data, {type: 'binary'});
+                    if(wb.Sheets["ADMIN"]) { const adminJson = XLSX.utils.sheet_to_json(wb.Sheets["ADMIN"]); if(adminJson.length > 0 && adminJson[0].Username) db.users.admin = adminJson.map(a => ({ username: a.Username, kode: a.Kode.toString(), foto: a.Link_Foto || "" })); }
+                    if(wb.Sheets["WALI_KELAS"]) { db.users.wali = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_KELAS"]).forEach(w => { const kls = w.Kelas.toString(); db.users.wali.push({ kelas: kls, nama: w.Nama_Wali, kode: w.Kode_Login.toString(), foto: w.Link_Foto || "" }); db.config.defaultNominal[kls] = parseInt(w.Nominal_Default) || 2000; }); }
+                    if(wb.Sheets["WALI_MURID"]) { db.users.murid = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_MURID"]).forEach(m => { let p = m.Presensi.toString(); if(p.length === 1) p = '0'+p; db.users.murid.push({ kelas: m.Kelas.toString(), presensi: p, nama: m.Nama_Siswa, kode: m.Kode_Login.toString(), foto: m.Link_Foto || "" }); }); }
+                    saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Update Berhasil!', text:'Data master terupdate.', customClass:{popup:'rounded-xl w-[90%] max-w-sm'}});
+                } catch (error) { Swal.fire({icon:'error', title:'Format Excel salah', customClass:{popup:'rounded-xl w-[80%] max-w-xs'}}); } e.target.value = '';
+            }; reader.readAsBinaryString(file);
+        }
+
+        // Export Report by Admin
+        function downloadReport() {
+            const targetClass = document.getElementById('admin-report-class').value;
+            generateReportForClass(targetClass, false); 
+        }
+
+        // Central logic export laporan
+        function generateReportForClass(targetClass, filterBySelectedMonths) {
+            const wb = XLSX.utils.book_new(); let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
+            classesToProcess.forEach(kls => {
+                const nominal = getNominalKelas(kls), students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+                let allDatesSet = new Set(); 
+                if(db.infaq[kls]) {
+                    Object.keys(db.infaq[kls]).forEach(d => {
+                        if (filterBySelectedMonths) {
+                            const mStr = d.slice(0, 7); if(session.selectedMonths.includes(mStr)) allDatesSet.add(d);
+                        } else { allDatesSet.add(d); }
+                    });
+                }
+                let allDates = Array.from(allDatesSet).sort();
+
+                let reportData = []; let totalMasukKelas = 0;
+                students.forEach(s => {
+                    let row = { Presensi: s.presensi, Nama: s.nama }; let stTotal = 0;
+                    allDates.forEach(d => { const stat = db.infaq[kls][d][s.presensi]; if(stat === 'paid') { row[d] = nominal; stTotal += nominal; } else if(stat === 'unpaid') { row[d] = 0; } else if (stat === 'libur') { row[d] = 'LIBUR'; } else { row[d] = '-'; } });
+                    row['Total_Infaq'] = stTotal; totalMasukKelas += stTotal; reportData.push(row);
+                });
+
+                reportData.push({}); reportData.push({ Presensi: 'TOTAL MASUK', Total_Infaq: totalMasukKelas });
+                const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
+                reportData.push({ Presensi: 'TOTAL PENGELUARAN', Total_Infaq: totalKeluarKelas }); reportData.push({ Presensi: 'SISA SALDO', Total_Infaq: totalMasukKelas - totalKeluarKelas });
+                
+                if(p.length > 0) { reportData.push({}); reportData.push({ Presensi: '--- RINCIAN PENGELUARAN ---' }); p.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => { reportData.push({ Presensi: item.date, Nama: item.desc, Total_Infaq: item.amount }); }); }
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(reportData), `LAPORAN_${kls}`);
+            }); 
+            let filename = `Laporan_Infaq_ELINA_${targetClass === 'ALL' ? 'Semua' : targetClass}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, filename);
+            
+            // Tambahan notifikasi Sukses agar jelas bagi pengguna
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Laporan Excel sudah didownload.',
+                timer: 2500,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-xl w-[80%] max-w-sm' }
+            });
+        }
+    </script>
+</body>
+</html>

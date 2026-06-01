@@ -924,6 +924,21 @@
             }).then((result) => { if (result.isConfirmed) window.open('https://wa.me/6287847702772', '_blank'); });
         }
 
+        // ====================================================================================
+        // HELPER FUNCTIONS
+        // ====================================================================================
+        function getAcademicYearMonths() {
+            const now = new Date();
+            // Tahun ajaran baru dimulai bulan Juli (Bulan ke-6 di JS dimana Jan=0)
+            let startYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+            let months = [];
+            for (let i = 0; i < 12; i++) {
+                let d = new Date(startYear, 6 + i, 1);
+                months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+            }
+            return months; // Menghasilkan array: ['2025-07', '2025-08', ... '2026-06']
+        }
+
         function getFridays(year, month) {
             let d = new Date(year, month - 1, 1), fridays = [];
             while (d.getMonth() === month - 1) { if (d.getDay() === 5) fridays.push(new Date(d.getTime())); d.setDate(d.getDate() + 1); } return fridays;
@@ -960,14 +975,16 @@
             html += '</div><div class="mt-4"><button type="button" onclick="const cbs = document.querySelectorAll(\'.month-checkbox\'); const allChecked = Array.from(cbs).every(c => c.checked); cbs.forEach(c => c.checked = !allChecked);" class="w-full bg-blue-50 text-blue-600 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-100 transition border border-blue-200 shadow-sm"><i class="fas fa-check-double mr-1"></i> Pilih Semua Bulan / Batal</button></div>';
 
             Swal.fire({
-                title: '<span class="text-base font-black">Filter Bulan</span>', html: html, showCancelButton: true, confirmButtonText: 'Terapkan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-3xl w-[95%] max-w-md p-5', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold' }, buttonsStyling: false,
+                title: '<span class="text-base font-black">Filter Tampilan (Web)</span>', html: html, showCancelButton: true, confirmButtonText: 'Terapkan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-3xl w-[95%] max-w-md p-5', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold' }, buttonsStyling: false,
                 preConfirm: () => { const checked = Array.from(document.querySelectorAll('.month-checkbox:checked')).map(cb => cb.value); if (checked.length === 0) { Swal.showValidationMessage('Pilih minimal 1 bulan'); return false; } return checked; }
             }).then(res => {
                 if (res.isConfirmed) { session.selectedMonths = res.value; sessionStorage.setItem('elina_session', JSON.stringify(session)); updateMonthDisplay(); if (session.role === 'wali') renderWaliChecklist(); else if (session.role === 'murid') renderMuridView(); }
             });
         }
 
-        // --- WALI KELAS VIEW LOGIC ---
+        // ====================================================================================
+        // WALI KELAS VIEW LOGIC
+        // ====================================================================================
         function setupWaliView() {
             document.getElementById('wali-title-kelas').textContent = `KELAS ${session.user.kelas}`; document.getElementById('wali-title-nama').textContent = session.user.nama;
             const imgEl = document.getElementById('wali-foto-profil');
@@ -1037,79 +1054,45 @@
         }
 
         function updateWallet(kelas, totalMasuk) {
-            const p = db.pengeluaran[kelas] || []; 
-            // PERBAIKAN BUG: sebelumnya tertulis "i.amount" di-loop map, diubah kembali menjadi item.amount di reduce
-            const totalKeluar = p.reduce((sum, item) => sum + item.amount, 0); 
-            document.getElementById('wali-tot-masuk').textContent = formatRupiah(totalMasuk); 
-            document.getElementById('wali-tot-keluar').textContent = formatRupiah(totalKeluar); 
-            document.getElementById('wali-tot-saldo').textContent = formatRupiah(totalMasuk - totalKeluar);
+            const p = db.pengeluaran[kelas] || []; const totalKeluar = p.reduce((sum, item) => sum + item.amount, 0);
+            document.getElementById('wali-tot-masuk').textContent = formatRupiah(totalMasuk); document.getElementById('wali-tot-keluar').textContent = formatRupiah(totalKeluar); document.getElementById('wali-tot-saldo').textContent = formatRupiah(totalMasuk - totalKeluar);
         }
 
-        // =========================================================================
-        // FITUR BARU: MANAJER LAPORAN WALI KELAS PRO
-        // =========================================================================
+        // ====================================================================================
+        // MANAJER LAPORAN & PDF WALI KELAS (1 SISWA 1 LEMBAR)
+        // ====================================================================================
         function downloadWaliReport() {
             const kls = session.user.kelas;
             const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
             
             if (students.length === 0) {
-                Swal.fire({icon: 'warning', title: 'Kelas Kosong', text: 'Belum ada siswa di kelas ini.', customClass:{popup:'rounded-3xl w-[80%] max-w-xs'}});
-                return;
+                Swal.fire({icon: 'warning', title: 'Kelas Kosong', text: 'Belum ada siswa di kelas ini.', customClass:{popup:'rounded-3xl w-[80%] max-w-xs'}}); return;
             }
 
-            let stuOptions = `<option value="ALL">Semua Siswa (Tabel Rekap Kelas)</option>`;
-            students.forEach(s => {
-                stuOptions += `<option value="${s.presensi}">Buku Infaq : ${s.nama}</option>`;
-            });
+            let stuOptions = `<option value="ALL">Semua Siswa (Cetak Lengkap)</option>`;
+            students.forEach(s => { stuOptions += `<option value="${s.presensi}">Hanya Siswa : ${s.nama}</option>`; });
 
             Swal.fire({
-                title: '<span class="text-base font-black">Pengaturan Laporan</span>',
+                title: '<span class="text-base font-black">Cetak Buku Infaq</span>',
                 html: `
                     <div class="text-left mt-4 space-y-4">
+                        <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl">
+                            <p class="text-[11px] font-medium text-blue-800 text-center"><i class="fas fa-info-circle mr-1"></i> Laporan akan langsung menampilkan rekapan <b>1 Tahun Ajaran Penuh</b>. 1 Lembar PDF diperuntukkan untuk 1 Siswa.</p>
+                        </div>
                         <div>
-                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Target Cetak</label>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Target Cetak PDF</label>
                             <select id="rep-target" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer mt-1 shadow-sm">
                                 ${stuOptions}
                             </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Rentang Waktu</label>
-                            <select id="rep-time" class="w-full p-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer mt-1 shadow-sm">
-                                <option value="SELECTED">Hanya Bulan yang Ditampilkan Saat Ini</option>
-                                <option value="ALL_TIME">Semua Bulan (Keseluruhan Data)</option>
-                            </select>
-                        </div>
-                        <div class="pt-2">
-                            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Format File</label>
-                            <div class="flex gap-2 mt-1">
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="rep-format" value="PDF" class="peer sr-only" checked>
-                                    <div class="text-center p-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500 transition shadow-sm"><i class="fas fa-file-pdf mr-1"></i> PDF</div>
-                                </label>
-                                <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="rep-format" value="EXCEL" class="peer sr-only">
-                                    <div class="text-center p-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600 transition shadow-sm"><i class="fas fa-file-excel mr-1"></i> EXCEL</div>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 `,
                 showCancelButton: true, confirmButtonText: 'Mulai Unduh <i class="fas fa-download ml-1"></i>', cancelButtonText: 'Batal',
                 customClass: { popup: 'rounded-3xl w-[95%] max-w-sm p-5 bg-slate-50', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-[0_4px_10px_rgba(37,99,235,0.2)] w-full mb-2', cancelButton: 'btn-click bg-white border border-gray-200 text-gray-600 px-5 py-3 rounded-xl text-xs font-bold w-full', actions: 'flex flex-col w-full' }, buttonsStyling: false,
-                preConfirm: () => {
-                    return { target: document.getElementById('rep-target').value, time: document.getElementById('rep-time').value, format: document.querySelector('input[name="rep-format"]:checked').value }
-                }
+                preConfirm: () => { return { target: document.getElementById('rep-target').value } }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    if (result.value.time === 'SELECTED' && (!session.selectedMonths || session.selectedMonths.length === 0)) {
-                        Swal.fire({icon: 'warning', title: 'Bulan Belum Dipilih', text: 'Anda memilih cetak bulan saat ini, tapi belum ada bulan yang diceklis.', customClass:{popup:'rounded-3xl w-[80%] max-w-xs'}});
-                        return;
-                    }
-                    if (result.value.format === 'PDF') {
-                        generateAdvancedWaliPDF(result.value.target, result.value.time);
-                    } else {
-                        generateAdvancedWaliExcel(result.value.target, result.value.time);
-                    }
+                    generateAdvancedWaliPDF(result.value.target);
                 }
             });
         }
@@ -1123,94 +1106,17 @@
                         const canvas = document.createElement("canvas");
                         canvas.width = img.width; canvas.height = img.height;
                         const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0);
-                        resolve({
-                            data: canvas.toDataURL(format || "image/jpeg", 0.8),
-                            ratio: img.height / img.width // Perhitungan Rasio yang aman
-                        });
-                    } catch (e) { console.warn("Canvas terblokir", e); resolve(null); }
+                        resolve(canvas.toDataURL(format || "image/jpeg", 0.8));
+                    } catch (e) { resolve(null); }
                 };
-                img.onerror = () => { console.warn(`Gagal memuat gambar: ${imageUrl}`); resolve(null); };
+                img.onerror = () => { resolve(null); };
                 if (imageUrl.startsWith('http')) img.src = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
                 else img.src = imageUrl;
             });
         }
 
-        async function processAdminPDF(targetClass, filterBySelectedMonths) {
-            const { jsPDF } = window.jspdf;
-            const pageWidth = 612.28; const pageHeight = 935.43;
-            const doc = new jsPDF('p', 'pt', [pageWidth, pageHeight]);
-            
-            let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
-            const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-            const userName = session.user.nama || session.user.username || "Admin";
-
-            if (!cachedKopAtas) cachedKopAtas = await getBase64ImageOptimized(LINK_KOP_ATAS, "image/jpeg");
-            if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH, "image/png"); 
-
-            let hAtas = 80; let hBawah = 80;
-            let dataAtas = null; let dataBawah = null;
-            if (cachedKopAtas) { dataAtas = cachedKopAtas.data; hAtas = Math.min((pageWidth * cachedKopAtas.ratio), 130); }
-            if (cachedKopBawah) { dataBawah = cachedKopBawah.data; hBawah = Math.min((pageWidth * cachedKopBawah.ratio), 130); }
-
-            classesToProcess.forEach((kls, index) => {
-                if (index > 0) doc.addPage();
-                const nominal = getNominalKelas(kls);
-                const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
-                
-                let allDatesSet = new Set(); 
-                if (db.infaq[kls]) {
-                    Object.keys(db.infaq[kls]).forEach(d => {
-                        if (filterBySelectedMonths) { const mStr = d.slice(0, 7); if (session.selectedMonths.includes(mStr)) allDatesSet.add(d); } 
-                        else { allDatesSet.add(d); }
-                    });
-                }
-                let allDates = Array.from(allDatesSet).sort();
-
-                if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-
-                let currentY = hAtas + 15;
-                doc.setFont('Helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(30, 41, 59); doc.text(`LAPORAN KEUANGAN INFAQ - KELAS ${kls}`, 40, currentY);
-                currentY += 14; doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text(`Dicetak pada : ${printDate} WIB`, 40, currentY); currentY += 12; doc.text(`Dicetak oleh : ${userName}`, 40, currentY);
-
-                let totalMasukKelas = 0; students.forEach(s => { allDates.forEach(d => { if (db.infaq[kls]?.[d]?.[s.presensi] === 'paid') totalMasukKelas += nominal; }); });
-                const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
-
-                currentY += 15; const boxW = (pageWidth - 80) / 3; const boxH = 45;
-                doc.setFillColor(59, 130, 246); doc.rect(40, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK", 50, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 50, currentY + 32);
-                doc.setFillColor(249, 115, 22); doc.rect(40 + boxW, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR", 40 + boxW + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + boxW + 10, currentY + 32);
-                doc.setFillColor(16, 185, 129); doc.rect(40 + (boxW * 2), currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO", 40 + (boxW * 2) + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (boxW * 2) + 10, currentY + 32);
-
-                currentY += boxH + 15;
-                let body = [];
-                students.forEach(s => {
-                    let row = [s.presensi, s.nama];
-                    allDates.forEach(d => { const stat = db.infaq[kls]?.[d]?.[s.presensi]; row.push(stat === 'paid' ? 'Lunas' : (stat === 'libur' ? 'Libur' : '-')); });
-                    body.push(row);
-                });
-
-                doc.autoTable({
-                    startY: currentY,
-                    head: [['No', 'Nama Siswa', ...allDates.map(d => formatDateID(d).slice(0,6))]],
-                    body: body, theme: 'striped', 
-                    styles: { fontSize: 7, cellPadding: 1.5 }, 
-                    headStyles: { fillColor: [30, 64, 175], fontSize: 7, cellPadding: 2 }, 
-                    alternateRowStyles: { fillColor: [240, 249, 255] }, 
-                    margin: { top: hAtas + 10, left: 40, right: 40, bottom: hBawah + 10 },
-                    didDrawPage: function (data) {
-                        if (data.pageNumber > 1) {
-                            if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                            if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-                        }
-                    }
-                });
-            });
-
-            return { doc, base64Atas: dataAtas, base64Bawah: dataBawah };
-        }
-
-        async function generateAdvancedWaliPDF(target, timeFilter) {
-            Swal.fire({ title: 'Menyiapkan Laporan...', html: 'Mengunduh KOP dan menyusun tata letak PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+        async function generateAdvancedWaliPDF(target) {
+            Swal.fire({ title: 'Menyiapkan Laporan...', html: 'Menarik gambar KOP dan merangkai halaman rapor siswa...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             setTimeout(async () => {
                 try {
@@ -1226,147 +1132,62 @@
                     if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH, "image/png");
 
                     let hAtas = 80; let hBawah = 80;
-                    let dataAtas = null; let dataBawah = null;
-                    // AMAN DARI NAN CRASH:
-                    if (cachedKopAtas) { dataAtas = cachedKopAtas.data; hAtas = Math.min((pageWidth * cachedKopAtas.ratio), 130); }
-                    if (cachedKopBawah) { dataBawah = cachedKopBawah.data; hBawah = Math.min((pageWidth * cachedKopBawah.ratio), 130); }
+                    if (cachedKopAtas) { const imgA = new Image(); imgA.src = cachedKopAtas; hAtas = Math.min((pageWidth * imgA.height) / imgA.width, 130); }
+                    if (cachedKopBawah) { const imgB = new Image(); imgB.src = cachedKopBawah; hBawah = Math.min((pageWidth * imgB.height) / imgB.width, 130); }
 
-                    // Tentukan rentang waktu
-                    let monthsToProcess = [];
-                    if (timeFilter === 'SELECTED') { monthsToProcess = [...session.selectedMonths].sort(); } 
-                    else {
-                        // Kumpulkan semua bulan yang ada datanya di kelas ini
-                        let allM = new Set();
-                        if (db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => allM.add(d.slice(0,7))); }
-                        monthsToProcess = Array.from(allM).sort();
-                        if(monthsToProcess.length === 0) monthsToProcess = [getLocalMonthStr()]; // Fallback jika kosong
-                    }
-
-                    // CABANG 1: CETAK BUKU INFAQ (PER SISWA)
-                    if (target !== 'ALL') {
-                        const s = db.users.murid.find(m => m.kelas === kls && m.presensi === target);
-                        
-                        if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                        if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-
-                        let currentY = hAtas + 25;
-                        doc.setFont('Helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(30, 41, 59); doc.text(`BUKU CATATAN INFAQ SISWA`, pageWidth/2, currentY, {align: 'center'});
-                        
-                        currentY += 25;
-                        doc.setFontSize(11); doc.setTextColor(71, 85, 105);
-                        doc.text(`Nama Lengkap`, 50, currentY); doc.text(`: ${s.nama}`, 150, currentY); currentY += 15;
-                        doc.text(`Kelas / Presensi`, 50, currentY); doc.text(`: ${s.kelas} / ${s.presensi}`, 150, currentY); currentY += 15;
-                        doc.text(`Dicetak Pada`, 50, currentY); doc.text(`: ${printDate} WIB`, 150, currentY);
-
-                        currentY += 20;
-                        let body = []; let totalSiswaMasuk = 0;
-
-                        monthsToProcess.forEach(mStr => {
-                            const [year, month] = mStr.split('-'); 
-                            const fridays = getFridays(parseInt(year), parseInt(month));
-                            let row = [formatMonthID(mStr)];
-                            let mTotal = 0;
-                            
-                            // Ambil data 5 pekan
-                            for(let i=0; i<5; i++) {
-                                if (fridays[i]) {
-                                    const dStr = getLocalYYYYMMDD(fridays[i]);
-                                    // Menggunakan Optional Chaining (?.) untuk mencegah Crash Undefined
-                                    const stat = db.infaq[kls]?.[dStr]?.[s.presensi];
-                                    if (stat === 'paid') { row.push('LUNAS'); mTotal += nominal; totalSiswaMasuk += nominal; }
-                                    else if (stat === 'libur') { row.push('LIBUR'); }
-                                    else { row.push('-'); }
-                                } else {
-                                    row.push(''); // Tidak ada pekan ke-5
-                                }
-                            }
-                            row.push(formatRupiah(mTotal));
-                            body.push(row);
-                        });
-
-                        doc.autoTable({
-                            startY: currentY,
-                            head: [['Bulan', 'Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4', 'Pekan 5', 'Total/Bln']],
-                            body: body, theme: 'grid', 
-                            headStyles: { fillColor: [37, 99, 235], textColor: 255, halign: 'center', fontSize: 10, cellPadding: 4 },
-                            bodyStyles: { halign: 'center', fontSize: 9, cellPadding: 3 },
-                            columnStyles: { 0: { halign: 'left', fontStyle: 'bold' }, 6: { halign: 'right', fontStyle: 'bold', textColor: [22, 163, 74] } },
-                            margin: { left: 40, right: 40, bottom: hBawah + 10 },
-                            didDrawPage: function (data) {
-                                if (data.pageNumber > 1) {
-                                    if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                                    if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-                                }
-                            }
-                        });
-
-                        doc.setFontSize(12); doc.setTextColor(30, 41, 59);
-                        doc.text(`Total Keseluruhan Infaq: ${formatRupiah(totalSiswaMasuk)}`, doc.lastAutoTable.finalY + 25, 40);
-                        
-                        doc.save(`Buku_Infaq_${s.nama}_${kls}.pdf`);
-                        Swal.close(); return;
-                    }
-
-                    // CABANG 2: CETAK REKAP SELURUH SISWA (2 SISWA PER HALAMAN)
-                    const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+                    // Selalu cetak 1 Tahun Ajaran (Tanpa Filter)
+                    let monthsToProcess = getAcademicYearMonths(); 
                     
-                    // HALAMAN PERTAMA: SUMMARY KELAS
-                    if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                    if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+                    const allMuridKelas = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+                    const studentsToPrint = target === 'ALL' ? allMuridKelas : allMuridKelas.filter(s => s.presensi === target);
 
-                    let currentY = hAtas + 15;
-                    doc.setFont('Helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30, 41, 59); doc.text(`LAPORAN REKAP INFAQ - KELAS ${kls}`, 40, currentY);
-                    currentY += 15; doc.setFont('Helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text(`Dicetak pada : ${printDate} WIB`, 40, currentY); 
-                    
-                    let totalMasukKelas = 0; 
-                    students.forEach(s => { 
+                    // Hitung Saldo Kelas untuk Header
+                    let totalMasukKelas = 0;
+                    allMuridKelas.forEach(st => {
                         monthsToProcess.forEach(mStr => {
-                            const [year, month] = mStr.split('-'); 
-                            const fridays = getFridays(parseInt(year), parseInt(month));
+                            const [year, month] = mStr.split('-'); const fridays = getFridays(parseInt(year), parseInt(month));
                             fridays.forEach(f => {
                                 const dStr = getLocalYYYYMMDD(f);
-                                if (db.infaq[kls]?.[dStr]?.[s.presensi] === 'paid') totalMasukKelas += nominal;
+                                if (db.infaq[kls]?.[dStr]?.[st.presensi] === 'paid') totalMasukKelas += nominal;
                             });
                         });
                     });
                     const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
 
-                    currentY += 20; const boxW = (pageWidth - 80) / 3; const boxH = 50; 
-                    doc.setFillColor(59, 130, 246); doc.rect(40, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(8); doc.text("TOTAL MASUK", 50, currentY + 15); doc.setFontSize(12); doc.text(formatRupiah(totalMasukKelas), 50, currentY + 35);
-                    doc.setFillColor(249, 115, 22); doc.rect(40 + boxW, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(8); doc.text("TOTAL KELUAR", 40 + boxW + 10, currentY + 15); doc.setFontSize(12); doc.text(formatRupiah(totalKeluarKelas), 40 + boxW + 10, currentY + 35);
-                    doc.setFillColor(16, 185, 129); doc.rect(40 + (boxW * 2), currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(8); doc.text("SISA SALDO", 40 + (boxW * 2) + 10, currentY + 15); doc.setFontSize(12); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (boxW * 2) + 10, currentY + 35);
+                    // Buat Data Tabel Pengeluaran
+                    let dataPengeluaran = [];
+                    p.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => { 
+                        dataPengeluaran.push([formatDateID(item.date), item.desc, formatRupiah(item.amount).replace('Rp','').trim()]); 
+                    });
 
-                    // MULAI PERULANGAN KARTU SISWA (2 SISWA PER HALAMAN)
-                    currentY += boxH + 30; 
-                    let studentCountOnPage = 0;
+                    // LOOP HALAMAN PER SISWA
+                    studentsToPrint.forEach((s, index) => {
+                        if (index > 0) doc.addPage();
+                        
+                        if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                        if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
 
-                    for (let i = 0; i < students.length; i++) {
-                        const s = students[i];
+                        let currentY = hAtas + 20;
+                        doc.setFont('Helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30, 41, 59); doc.text(`LAPORAN KEUANGAN INFAQ - KELAS ${kls}`, 40, currentY);
+                        currentY += 15; doc.setFont('Helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text(`Dicetak pada : ${printDate} WIB`, 40, currentY); 
+                        
+                        // KOTAK RINGKASAN SALDO KELAS
+                        currentY += 15; const boxW = (pageWidth - 80) / 3; const boxH = 45; 
+                        doc.setFillColor(59, 130, 246); doc.rect(40, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK", 50, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 50, currentY + 30);
+                        doc.setFillColor(249, 115, 22); doc.rect(40 + boxW, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR", 40 + boxW + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + boxW + 10, currentY + 30);
+                        doc.setFillColor(16, 185, 129); doc.rect(40 + (boxW * 2), currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO", 40 + (boxW * 2) + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (boxW * 2) + 10, currentY + 30);
 
-                        // Buat halaman baru jika sudah ada 2 siswa, atau ruang habis
-                        if (studentCountOnPage === 2 || (currentY + 280 > pageHeight - hBawah)) {
-                            doc.addPage();
-                            if (dataAtas) doc.addImage(dataAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                            if (dataBawah) doc.addImage(dataBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-                            currentY = hAtas + 30;
-                            studentCountOnPage = 0;
-                        }
-
-                        // Gambar Card (Shape) Luar
-                        doc.setFillColor(248, 250, 252); // bg-slate-50
-                        doc.setDrawColor(226, 232, 240); // border-slate-200
-                        doc.roundedRect(40, currentY, pageWidth - 80, 290, 8, 8, 'FD');
-
-                        // Gambar Card Header Biru
+                        // KARTU RAPOR INFAQ SISWA
+                        currentY += boxH + 20;
+                        
+                        // Header Kartu
                         doc.setFillColor(37, 99, 235); // bg-blue-600
-                        doc.roundedRect(40, currentY, pageWidth - 80, 25, 8, 8, 'F');
-                        doc.rect(40, currentY + 15, pageWidth - 80, 10, 'F'); // menambal siku bawah header
-
+                        doc.roundedRect(40, currentY, pageWidth - 80, 25, 6, 6, 'F');
+                        doc.rect(40, currentY + 15, pageWidth - 80, 10, 'F'); // Menambal radius bawah agar lurus dengan tabel
                         doc.setFont('Helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255, 255, 255);
-                        doc.text(`No: ${s.presensi}  |  Nama: ${s.nama}`, 50, currentY + 17);
+                        doc.text(`No: ${s.presensi}  |  Nama Siswa: ${s.nama}`, 50, currentY + 17);
 
-                        // Ambil Data Khusus Siswa Ini
-                        let body = []; let totalSiswaMasuk = 0;
+                        let bodySiswa = []; let totalSiswaMasuk = 0;
                         monthsToProcess.forEach(mStr => {
                             const [year, month] = mStr.split('-'); 
                             const fridays = getFridays(parseInt(year), parseInt(month));
@@ -1385,35 +1206,57 @@
                                 }
                             }
                             row.push(formatRupiah(mTotal).replace('Rp','').trim());
-                            body.push(row);
+                            bodySiswa.push(row);
                         });
                         
-                        body.push(['TOTAL KESELURUHAN', '', '', '', '', '', formatRupiah(totalSiswaMasuk)]);
+                        bodySiswa.push(['TOTAL KESELURUHAN INFAQ', '', '', '', '', '', formatRupiah(totalSiswaMasuk)]);
 
-                        // Cetak Mini-Tabel di dalam Card
+                        // Tabel Rapor
                         doc.autoTable({
-                            startY: currentY + 35,
+                            startY: currentY + 25,
                             head: [['Bulan', 'Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4', 'Pekan 5', 'Total']],
-                            body: body, theme: 'grid', 
-                            headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], halign: 'center', fontSize: 8, cellPadding: 2, lineWidth: 0.1, lineColor: [226, 232, 240] },
-                            bodyStyles: { halign: 'center', fontSize: 7, cellPadding: 2, lineWidth: 0.1, lineColor: [226, 232, 240] },
+                            body: bodySiswa, theme: 'grid', 
+                            headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], halign: 'center', fontSize: 9, cellPadding: 3, lineColor: [226, 232, 240] },
+                            bodyStyles: { halign: 'center', fontSize: 8, cellPadding: 3, lineColor: [226, 232, 240] },
                             columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } },
-                            margin: { left: 45, right: 45 },
-                            tableWidth: pageWidth - 90,
+                            margin: { left: 40, right: 40 },
                             didParseCell: function(data) {
-                                if (data.row.index === body.length - 1) {
+                                if (data.row.index === bodySiswa.length - 1) { // Baris Terakhir (Total)
                                     data.cell.styles.fontStyle = 'bold';
                                     data.cell.styles.fillColor = [226, 232, 240];
-                                    if (data.column.index === 6) data.cell.styles.textColor = [22, 163, 74];
+                                    if (data.column.index === 6) data.cell.styles.textColor = [22, 163, 74]; // Hijau
                                 }
                             }
                         });
 
-                        currentY += 310; // Geser Y ke bawah untuk menggambar kartu siswa berikutnya
-                        studentCountOnPage++;
-                    }
+                        // DAFTAR PENGELUARAN
+                        currentY = doc.lastAutoTable.finalY + 30;
+                        doc.setFont('Helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 41, 59); 
+                        doc.text(`Daftar Pengeluaran Kelas:`, 40, currentY);
 
-                    doc.save(`Rekap_Kelas_${kls}_${timeFilter}.pdf`);
+                        if (dataPengeluaran.length > 0) {
+                            doc.autoTable({
+                                startY: currentY + 10,
+                                head: [['Tanggal', 'Keterangan Pengeluaran', 'Nominal (Rp)']],
+                                body: dataPengeluaran,
+                                theme: 'striped',
+                                headStyles: { fillColor: [249, 115, 22], fontSize: 9 }, // Orange header
+                                bodyStyles: { fontSize: 8 },
+                                columnStyles: { 2: { halign: 'right', fontStyle: 'bold', textColor: [220, 38, 38] } }, // Merah Nominal
+                                margin: { left: 40, right: 40, bottom: hBawah + 10 },
+                                // Proteksi Pindah Halaman untuk Pengeluaran
+                                didDrawPage: function (data) {
+                                    if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                                    if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+                                }
+                            });
+                        } else {
+                            doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(156, 163, 175); 
+                            doc.text(`Belum ada catatan pengeluaran.`, 40, currentY + 15);
+                        }
+                    });
+
+                    doc.save(`Rapor_Infaq_${kls}_${target === 'ALL' ? 'Semua' : target}.pdf`);
                     Swal.close();
 
                 } catch (error) {
@@ -1423,89 +1266,153 @@
             }, 300);
         }
 
-        function generateAdvancedWaliExcel(target, timeFilter) {
-            const wb = XLSX.utils.book_new(); 
-            const kls = session.user.kelas;
-            const nominal = getNominalKelas(kls);
-            
-            let monthsToProcess = [];
-            if (timeFilter === 'SELECTED') { monthsToProcess = [...session.selectedMonths].sort(); } 
-            else {
-                let allM = new Set();
-                if (db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => allM.add(d.slice(0,7))); }
-                monthsToProcess = Array.from(allM).sort();
-                if(monthsToProcess.length === 0) monthsToProcess = [getLocalMonthStr()]; 
-            }
-
-            if (target !== 'ALL') {
-                const s = db.users.murid.find(m => m.kelas === kls && m.presensi === target);
-                let aoa = [
-                    ["BUKU CATATAN INFAQ SISWA"], [],
-                    ["Nama Siswa", s.nama],
-                    ["Kelas", s.kelas],
-                    ["No Presensi", s.presensi], [],
-                    ["BULAN", "PEKAN 1", "PEKAN 2", "PEKAN 3", "PEKAN 4", "PEKAN 5", "TOTAL (Rp)"]
-                ];
-
-                let grandTotal = 0;
-                monthsToProcess.forEach(mStr => {
-                    const [year, month] = mStr.split('-'); const fridays = getFridays(parseInt(year), parseInt(month));
-                    let row = [formatMonthID(mStr)]; let mTotal = 0;
-                    for(let i=0; i<5; i++) {
-                        if (fridays[i]) {
-                            const dStr = getLocalYYYYMMDD(fridays[i]);
-                            const stat = db.infaq[kls]?.[dStr]?.[s.presensi];
-                            if (stat === 'paid') { row.push(nominal); mTotal += nominal; grandTotal += nominal; }
-                            else if (stat === 'libur') { row.push('LIBUR'); } else { row.push(0); }
-                        } else { row.push(''); }
-                    }
-                    row.push(mTotal); aoa.push(row);
-                });
-                aoa.push([], ["TOTAL KESELURUHAN:", "", "", "", "", "", grandTotal]);
-                
-                const ws = XLSX.utils.aoa_to_sheet(aoa);
-                ws['!cols'] = [{wch: 15}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 12}, {wch: 15}];
-                XLSX.utils.book_append_sheet(wb, ws, s.nama.substring(0,25));
-                XLSX.writeFile(wb, `Infaq_${s.nama}_${kls}.xlsx`);
-
-            } else {
-                // Rekap Kelas
-                const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
-                let allDates = [];
-                monthsToProcess.forEach(mStr => {
-                    const [year, month] = mStr.split('-'); const fridays = getFridays(parseInt(year), parseInt(month));
-                    fridays.forEach(f => allDates.push(getLocalYYYYMMDD(f)));
-                });
-
-                let aoa = [ ["LAPORAN REKAP KEUANGAN KELAS " + kls], ["Dicetak:", new Date().toLocaleDateString('id-ID')], [], ["RINGKASAN", "JUMLAH (IDR)"], ["Total Masuk", 0], ["Total Keluar", 0], ["Sisa Saldo", 0], [], [] ];
-                
-                let headers = ["NO", "NAMA SISWA"];
-                allDates.forEach(d => headers.push(formatDateID(d).slice(0,6))); headers.push("TOTAL");
-                aoa.push(headers);
-
-                let totalMasukKelas = 0;
-                students.forEach(s => {
-                    let row = [s.presensi, s.nama]; let stTotal = 0;
-                    allDates.forEach(d => { 
-                        const stat = db.infaq[kls]?.[d]?.[s.presensi]; 
-                        if (stat === 'paid') { row.push(nominal); stTotal += nominal; } 
-                        else if (stat === 'libur') { row.push("LIBUR"); } else { row.push(0); } 
-                    });
-                    row.push(stTotal); totalMasukKelas += stTotal; aoa.push(row);
-                });
-
-                aoa[4][1] = totalMasukKelas;
-                const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
-                aoa[5][1] = totalKeluarKelas; aoa[6][1] = totalMasukKelas - totalKeluarKelas;
-
-                const ws = XLSX.utils.aoa_to_sheet(aoa);
-                ws['!cols'] = [{ wch: 5 }, { wch: 20 }, ...Array(allDates.length).fill({ wch: 8 }), { wch: 15 }];
-                XLSX.utils.book_append_sheet(wb, ws, `REKAP_${kls}`);
-                XLSX.writeFile(wb, `Rekap_Infaq_Kelas_${kls}.xlsx`);
-            }
-            Swal.fire({ icon: 'success', title: 'Berhasil!', showConfirmButton: false, timer: 1500, customClass: { popup: 'rounded-3xl w-[80%] max-w-sm' } });
+        // ====================================================================================
+        // MANAJER LAPORAN & PDF ADMIN (1 KELAS 1 LEMBAR)
+        // ====================================================================================
+        function downloadReport() {
+            const targetClass = document.getElementById('admin-report-class').value;
+            Swal.fire({
+                title: '<span class="text-base font-black">Konfirmasi Laporan</span>', 
+                html: `<div class="text-left text-sm text-gray-600 mt-2 space-y-3"><div class="bg-blue-50 border border-blue-100 p-3 rounded-xl"><p class="text-[11px] font-medium text-blue-800 text-center"><i class="fas fa-info-circle mr-1"></i> Laporan Admin akan langsung merekap <b>Seluruh Pemasukan Siswa selama 1 Tahun Ajaran</b> ke dalam 1 Halaman Per Kelas.</p></div></div>`, 
+                showCancelButton: true, confirmButtonText: 'Unduh PDF', cancelButtonText: 'Batal',
+                customClass: { popup: 'rounded-3xl w-[90%] max-w-sm p-5', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold' }, buttonsStyling: false
+            }).then((result) => { 
+                if (result.isConfirmed) { generatePDFReportAdmin(targetClass); } 
+            });
         }
 
+        async function generatePDFReportAdmin(targetClass) {
+            Swal.fire({ title: 'Menyiapkan Laporan...', html: 'Mengunduh KOP dan menyusun tata letak PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            setTimeout(async () => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const pageWidth = 612.28; const pageHeight = 935.43; // F4
+                    const doc = new jsPDF('p', 'pt', [pageWidth, pageHeight]);
+                    
+                    let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
+                    const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                    const userName = session.user.nama || session.user.username || "Admin";
+
+                    if (!cachedKopAtas) cachedKopAtas = await getBase64ImageOptimized(LINK_KOP_ATAS, "image/jpeg");
+                    if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH, "image/png");
+
+                    let hAtas = 80; let hBawah = 80;
+                    if (cachedKopAtas) { const imgA = new Image(); imgA.src = cachedKopAtas; hAtas = Math.min((pageWidth * imgA.height) / imgA.width, 130); }
+                    if (cachedKopBawah) { const imgB = new Image(); imgB.src = cachedKopBawah; hBawah = Math.min((pageWidth * imgB.height) / imgB.width, 130); }
+
+                    let monthsToProcess = getAcademicYearMonths(); // Selalu 1 Tahun
+
+                    classesToProcess.forEach((kls, index) => {
+                        if (index > 0) doc.addPage();
+                        const nominal = getNominalKelas(kls);
+                        const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+                        
+                        if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                        if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+
+                        let currentY = hAtas + 20;
+                        doc.setFont('Helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30, 41, 59); doc.text(`LAPORAN KEUANGAN INFAQ - KELAS ${kls}`, 40, currentY);
+                        currentY += 15; doc.setFont('Helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(100, 116, 139); doc.text(`Dicetak pada : ${printDate} WIB`, 40, currentY); 
+                        currentY += 12; doc.text(`Dicetak oleh : ${userName}`, 40, currentY);
+
+                        let totalMasukKelas = 0;
+                        let bodyPemasukan = [];
+                        
+                        // Hitung total masuk per siswa selama 1 tahun
+                        students.forEach(s => {
+                            let stTotal = 0;
+                            monthsToProcess.forEach(mStr => {
+                                const [year, month] = mStr.split('-'); const fridays = getFridays(parseInt(year), parseInt(month));
+                                fridays.forEach(f => {
+                                    const dStr = getLocalYYYYMMDD(f);
+                                    if (db.infaq[kls]?.[dStr]?.[s.presensi] === 'paid') { stTotal += nominal; totalMasukKelas += nominal; }
+                                });
+                            });
+                            bodyPemasukan.push([s.presensi, s.nama, formatRupiah(stTotal).replace('Rp','').trim()]);
+                        });
+
+                        const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
+
+                        // Kotak Ringkasan
+                        currentY += 20; const boxW = (pageWidth - 80) / 3; const boxH = 45;
+                        doc.setFillColor(59, 130, 246); doc.rect(40, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK", 50, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 50, currentY + 32);
+                        doc.setFillColor(249, 115, 22); doc.rect(40 + boxW, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR", 40 + boxW + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + boxW + 10, currentY + 32);
+                        doc.setFillColor(16, 185, 129); doc.rect(40 + (boxW * 2), currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO", 40 + (boxW * 2) + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (boxW * 2) + 10, currentY + 32);
+
+                        // Tabel Pemasukan Siswa
+                        currentY += boxH + 15;
+                        doc.autoTable({
+                            startY: currentY,
+                            head: [['No', 'Nama Siswa', 'Total Infaq (Rp)']],
+                            body: bodyPemasukan, theme: 'striped', 
+                            styles: { fontSize: 8, cellPadding: 2 }, 
+                            headStyles: { fillColor: [30, 64, 175], fontSize: 9 }, 
+                            columnStyles: { 2: { halign: 'right', fontStyle: 'bold', textColor: [22, 163, 74] } },
+                            alternateRowStyles: { fillColor: [240, 249, 255] }, 
+                            margin: { left: 40, right: 40, bottom: hBawah + 10 },
+                            didDrawPage: function (data) {
+                                if (data.pageNumber > 1) {
+                                    if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                                    if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+                                }
+                            }
+                        });
+
+                        // Tabel Pengeluaran Kelas
+                        currentY = doc.lastAutoTable.finalY + 25;
+                        
+                        // Cek jika butuh halaman baru untuk judul pengeluaran
+                        if (currentY > pageHeight - hBawah - 50) {
+                            doc.addPage();
+                            if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                            if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+                            currentY = hAtas + 25;
+                        }
+
+                        doc.setFont('Helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(30, 41, 59); 
+                        doc.text(`Daftar Pengeluaran Kelas:`, 40, currentY);
+
+                        let dataPengeluaran = [];
+                        p.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => { 
+                            dataPengeluaran.push([formatDateID(item.date), item.desc, formatRupiah(item.amount).replace('Rp','').trim()]); 
+                        });
+
+                        if (dataPengeluaran.length > 0) {
+                            doc.autoTable({
+                                startY: currentY + 10,
+                                head: [['Tanggal', 'Keterangan Pengeluaran', 'Nominal (Rp)']],
+                                body: dataPengeluaran, theme: 'striped',
+                                headStyles: { fillColor: [249, 115, 22], fontSize: 9 }, // Orange header
+                                bodyStyles: { fontSize: 8 },
+                                columnStyles: { 2: { halign: 'right', fontStyle: 'bold', textColor: [220, 38, 38] } }, // Merah
+                                margin: { left: 40, right: 40, bottom: hBawah + 10 },
+                                didDrawPage: function (data) {
+                                    // Memastikan halaman sambungan pengeluaran juga ada KOP (Jika tabel memisah)
+                                    // Pengecekan agar tidak nge-print double jika sudah di-print oleh logic addPage manual di atas
+                                    if (data.pageNumber > doc.internal.getCurrentPageInfo().pageNumber) {
+                                        if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
+                                        if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
+                                    }
+                                }
+                            });
+                        } else {
+                            doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(156, 163, 175); 
+                            doc.text(`Belum ada catatan pengeluaran.`, 40, currentY + 15);
+                        }
+                    });
+
+                    doc.save(`Laporan_Infaq_ELINA_${targetClass === 'ALL' ? 'SEKOLAH' : 'Kelas_'+targetClass}.pdf`);
+                    Swal.close();
+
+                } catch (error) {
+                    console.error("PDF Error:", error);
+                    Swal.fire({icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat memproses data PDF.'});
+                }
+            }, 300);
+        }
+
+        // --- EXCEL LOGIC & HELPER LAINNYA TETAP ---
         function openPengeluaranModal() {
             Swal.fire({
                 title: '<span class="text-base font-black">Catat Pengeluaran</span>',

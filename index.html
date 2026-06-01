@@ -1579,114 +1579,26 @@
             });
         }
 
-        // =========================================================================
-        // ADMIN PDF GENERATOR (Dipertahankan menggunakan metode lama)
-        // =========================================================================
-        function downloadReport() {
-            const targetClass = document.getElementById('admin-report-class').value;
-            askFormat(targetClass, false); 
+        function downloadFormatExcel() {
+            const wb = XLSX.utils.book_new();
+            const adminData = db.users.admin.map(a => ({ Username: a.username, Kode: a.kode, Link_Foto: a.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(adminData), "ADMIN");
+            const waliData = db.users.wali.map(w => ({ Kelas: w.kelas, Nama_Wali: w.nama, Kode_Login: w.kode, Nominal_Default: getNominalKelas(w.kelas), Link_Foto: w.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(waliData.length > 0 ? waliData : [{Kelas:'1A', Nama_Wali:'Ust. Budi', Kode_Login:'123', Nominal_Default:2000, Link_Foto: ""}]), "WALI_KELAS");
+            const muridData = db.users.murid.map(m => ({ Kelas: m.kelas, Presensi: m.presensi, Nama_Siswa: m.nama, Kode_Login: m.kode, Link_Foto: m.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(muridData.length > 0 ? muridData : [{Kelas:'1A', Presensi:'01', Nama_Siswa:'Ahmad', Kode_Login:'01', Link_Foto: ""}]), "WALI_MURID");
+            XLSX.writeFile(wb, "Format_Data_ELINA.xlsx");
         }
 
-        async function processAdminPDF(targetClass, filterBySelectedMonths) {
-            const { jsPDF } = window.jspdf;
-            const pageWidth = 612.28; const pageHeight = 935.43;
-            const doc = new jsPDF('p', 'pt', [pageWidth, pageHeight]);
-            
-            let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
-            const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-            const userName = session.user.nama || session.user.username || "Admin";
-
-            if (!cachedKopAtas) cachedKopAtas = await getBase64ImageOptimized(LINK_KOP_ATAS, "image/jpeg");
-            if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH, "image/png"); 
-
-            let hAtas = 80; let hBawah = 80;
-            // DIBATASI 130pt agar ukuran F4 muat 35 siswa per halaman
-            if (cachedKopAtas) { const imgA = new Image(); imgA.src = cachedKopAtas; hAtas = Math.min((pageWidth * imgA.height) / imgA.width, 130); }
-            if (cachedKopBawah) { const imgB = new Image(); imgB.src = cachedKopBawah; hBawah = Math.min((pageWidth * imgB.height) / imgB.width, 130); }
-
-            classesToProcess.forEach((kls, index) => {
-                if (index > 0) doc.addPage();
-                const nominal = getNominalKelas(kls);
-                const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
-                
-                let allDatesSet = new Set(); 
-                if (db.infaq[kls]) {
-                    Object.keys(db.infaq[kls]).forEach(d => {
-                        if (filterBySelectedMonths) { const mStr = d.slice(0, 7); if (session.selectedMonths.includes(mStr)) allDatesSet.add(d); } 
-                        else { allDatesSet.add(d); }
-                    });
-                }
-                let allDates = Array.from(allDatesSet).sort();
-
-                if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-
-                let currentY = hAtas + 15;
-                doc.setFont('Helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(30, 41, 59); doc.text(`LAPORAN KEUANGAN INFAQ - KELAS ${kls}`, 40, currentY);
-                currentY += 14; doc.setFont('Helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text(`Dicetak pada : ${printDate} WIB`, 40, currentY); currentY += 12; doc.text(`Dicetak oleh : ${userName}`, 40, currentY);
-
-                let totalMasukKelas = 0; students.forEach(s => { allDates.forEach(d => { if (db.infaq[kls]?.[d]?.[s.presensi] === 'paid') totalMasukKelas += nominal; }); });
-                const p = db.pengeluaran[kls] || []; const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
-
-                currentY += 15; const boxW = (pageWidth - 80) / 3; const boxH = 45;
-                doc.setFillColor(59, 130, 246); doc.rect(40, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK", 50, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 50, currentY + 32);
-                doc.setFillColor(249, 115, 22); doc.rect(40 + boxW, currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR", 40 + boxW + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + boxW + 10, currentY + 32);
-                doc.setFillColor(16, 185, 129); doc.rect(40 + (boxW * 2), currentY, boxW - 5, boxH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO", 40 + (boxW * 2) + 10, currentY + 14); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (boxW * 2) + 10, currentY + 32);
-
-                currentY += boxH + 15;
-                let body = [];
-                students.forEach(s => {
-                    let row = [s.presensi, s.nama];
-                    allDates.forEach(d => { const stat = db.infaq[kls]?.[d]?.[s.presensi]; row.push(stat === 'paid' ? 'Lunas' : (stat === 'libur' ? 'Libur' : '-')); });
-                    body.push(row);
-                });
-
-                doc.autoTable({
-                    startY: currentY,
-                    head: [['No', 'Nama Siswa', ...allDates.map(d => formatDateID(d).slice(0,6))]],
-                    body: body, theme: 'striped', 
-                    styles: { fontSize: 7, cellPadding: 1.5 }, 
-                    headStyles: { fillColor: [30, 64, 175], fontSize: 7, cellPadding: 2 }, 
-                    alternateRowStyles: { fillColor: [240, 249, 255] }, 
-                    margin: { top: hAtas + 10, left: 40, right: 40, bottom: hBawah + 10 },
-                    didDrawPage: function (data) {
-                        if (data.pageNumber > 1) {
-                            if (cachedKopAtas) doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pageWidth, hAtas);
-                            if (cachedKopBawah) doc.addImage(cachedKopBawah, 'PNG', 0, pageHeight - hBawah, pageWidth, hBawah);
-                        }
-                    }
-                });
-            });
-
-            return { doc, base64Atas: cachedKopAtas, base64Bawah: cachedKopBawah };
-        }
-
-        function askFormat(targetClass, filterBySelectedMonths) {
-            Swal.fire({
-                title: 'Pilih Format Laporan', text: 'Silakan pilih format file yang Anda inginkan.', icon: 'question', showCancelButton: true, confirmButtonText: 'PDF (Profesional)', cancelButtonText: 'Excel (Data)',
-                customClass: { popup: 'rounded-3xl w-[90%] max-w-sm', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md', cancelButton: 'btn-click bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md' }, buttonsStyling: false
-            }).then((result) => { 
-                if (result.isConfirmed) { 
-                    Swal.fire({
-                        title: 'Menyiapkan Dokumen...', html: 'Sedang memuat KOP dan merender laporan...', allowOutsideClick: false,
-                        didOpen: () => { 
-                            Swal.showLoading();
-                            setTimeout(async () => {
-                                try {
-                                    const resultData = await processAdminPDF(targetClass, filterBySelectedMonths);
-                                    resultData.doc.save(`Laporan_Infaq_ELINA_${targetClass}_${getLocalYYYYMMDD(new Date())}.pdf`);
-                                    Swal.close();
-                                } catch (error) {
-                                    console.error("PDF Error:", error);
-                                    Swal.fire({icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat membuat PDF.'});
-                                }
-                            }, 200);
-                        }
-                    });
-                } else if (result.dismiss === Swal.DismissReason.cancel) { 
-                    generateReportForClass(targetClass, filterBySelectedMonths); 
-                } 
-            });
+        function uploadExcel(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = evt.target.result; const wb = XLSX.read(data, {type: 'binary'});
+                    if (wb.Sheets["ADMIN"]) { const adminJson = XLSX.utils.sheet_to_json(wb.Sheets["ADMIN"]); if (adminJson.length > 0 && adminJson[0].Username) db.users.admin = adminJson.map(a => ({ username: a.Username, kode: a.Kode.toString(), foto: a.Link_Foto || "" })); }
+                    if (wb.Sheets["WALI_KELAS"]) { db.users.wali = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_KELAS"]).forEach(w => { const kls = w.Kelas.toString(); db.users.wali.push({ kelas: kls, nama: w.Nama_Wali, kode: w.Kode_Login.toString(), foto: w.Link_Foto || "" }); db.config.defaultNominal[kls] = parseInt(w.Nominal_Default) || 2000; }); }
+                    if (wb.Sheets["WALI_MURID"]) { db.users.murid = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_MURID"]).forEach(m => { let p = m.Presensi.toString(); if (p.length === 1) p = '0'+p; db.users.murid.push({ kelas: m.Kelas.toString(), presensi: p, nama: m.Nama_Siswa, kode: m.Kode_Login.toString(), foto: m.Link_Foto || "" }); }); }
+                    saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Data Terupdate!', customClass:{popup:'rounded-3xl w-[85%] max-w-sm'}});
+                } catch (error) { Swal.fire({icon:'error', title:'Format Salah', text: 'Pastikan file sesuai format.', customClass:{popup:'rounded-3xl w-[80%] max-w-xs'}}); } 
+                e.target.value = '';
+            }; reader.readAsBinaryString(file);
         }
     </script>
 </body>

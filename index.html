@@ -101,42 +101,19 @@
     <div id="app-container" class="flex-grow flex flex-col w-full max-w-5xl mx-auto p-2 md:p-6 relative z-10">
 
         <!-- VIEW: LOGIN -->
-        <div id="view-login" class="flex-grow flex flex-col items-center justify-start fade-in w-full max-w-[320px] mx-auto relative z-10 pt-6">
+        <div id="view-login" class="flex-grow flex flex-col items-center justify-center fade-in w-full max-w-sm mx-auto relative z-10">
+            <img src="https://lh3.googleusercontent.com/d/1psvEKR4OwW81rTJEJByMpxvuU1xqSoc1" alt="Logo Sekolah" class="w-20 h-20 object-contain mb-2 drop-shadow-md">
             
-            <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                <div class="planet-orig top-[15%]" style="animation-duration: 25s; animation-delay: 0s;">🌍</div>
-                <div class="planet-orig top-[45%] text-[5rem]" style="animation-duration: 35s; animation-delay: 4s;">🪐</div>
-                <div class="planet-orig top-[30%] text-[3rem]" style="animation-duration: 20s; animation-delay: 7s;">🌕</div>
-                <div class="planet-orig top-[10%] text-[1.5rem] animate-twinkle" style="animation-duration: 14s; animation-delay: 2s;">⭐</div>
-                <div class="planet-orig top-[55%] text-[1rem] animate-twinkle" style="animation-duration: 10s; animation-delay: 6s;">🌟</div>
-                <div class="planet-orig top-[80%] text-[2rem] animate-twinkle" style="animation-duration: 15s; animation-delay: 9s;">✨</div>
-            </div>
-
-            <img src="https://lh3.googleusercontent.com/d/1psvEKR4OwW81rTJEJByMpxvuU1xqSoc1" 
-                 alt="Logo Sekolah" 
-                 class="w-28 h-28 object-contain mb-0 drop-shadow-xl relative z-10"
-                 onerror="this.src='https://ui-avatars.com/api/?name=Al+Kautsar&background=3B82F6&color=fff&rounded=true&size=150'">
-            
-            <div class="text-center mb-4 relative z-10 -mt-1">
-                <h1 class="text-[3.2rem] font-tegas font-black tracking-tighter leading-none flex justify-center items-center uppercase drop-shadow-sm">
-                    <span class="text-transparent bg-clip-text bg-gradient-to-br from-blue-800 to-blue-600">E</span>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-br from-orange-600 to-orange-400">LINA</span>
+            <div class="text-center mb-5">
+                <h1 class="text-[4rem] font-tegas font-black tracking-tighter leading-none flex justify-center items-center uppercase">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-br from-blue-700 to-blue-500">E</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-br from-orange-500 to-yellow-400">LINA</span>
                 </h1>
-                <p class="text-[9px] font-extrabold text-gray-500 tracking-[0.2em] mt-1 uppercase">Elektronik Infaq Al Kautsar</p>
+                <p class="text-[9px] font-bold text-gray-500 tracking-[0.2em] mt-1 uppercase">Elektronik Infaq Al Kautsar</p>
             </div>
 
-            <!-- KOTAK PANTUN (TAMPIL KEMBALI DENGAN ELEGAN) -->
-            <div class="relative w-full text-center mb-5 fade-in z-20">
-                <span class="absolute -top-3 -left-2 text-lg bounce-emoji z-10 select-none drop-shadow-sm">✨</span>
-                <span class="absolute -bottom-2 -right-2 text-lg float-emoji z-10 select-none drop-shadow-sm" style="animation-delay: 1s">😸</span>
-                <div class="bg-gradient-to-br from-blue-50/90 to-orange-50/90 backdrop-blur-md border border-white/60 py-3 px-4 relative overflow-hidden text-center rounded-[24px] shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
-                    <p id="pantun-text" class="italic text-gray-700 text-[10px] font-semibold leading-relaxed z-0 relative"></p>
-                </div>
-            </div>
-
-            <!-- KOTAK LOGIN DIRAMPINGKAN -->
-            <div class="glass w-full p-4 relative overflow-hidden z-20 rounded-[20px]">
-                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500"></div>
+            <div class="glass w-full p-5 relative overflow-hidden z-20">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-orange-400"></div>
                 
                 <div class="flex justify-center space-x-1 mb-5 bg-gray-100/80 p-1 rounded-xl border border-gray-200">
                     <button type="button" onclick="setLoginRole('admin')" id="tab-admin" class="btn-click flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all text-gray-500">Admin</button>
@@ -213,7 +190,7 @@
                     </div>
 
                     <div class="flex items-center justify-between pt-1">
-                        <label class="flex items-center text-[10px] font-semibold text-gray-500 cursor-pointer hover:text-blue-600">
+                        <label class="flex items-center text-[10px] font-semibold text-gray-500 cursor-pointer">
                             <input type="checkbox" id="remember-me" class="mr-2 rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 border-gray-300">
                             Simpan Akses
                         </label>
@@ -440,14 +417,6 @@
         let db = { config: { defaultNominal: {} }, users: { admin: [{ username: 'admin', kode: 'admin123', foto: '' }], wali: [], murid: [] }, infaq: {}, pengeluaran: {} };
         let session = { role: null, user: null };
 
-        const PANTUN_LIST = [
-            `"Jalan-jalan ke kota tua, Jangan lupa beli pepaya.<br><span class="text-blue-600 font-bold">Walau uang saku tak seberapa, Infaq jumat wajib dijaga ya!</span>"`,
-            `"Beli seblak level dewa, Pedasnya bikin meringis.<br><span class="text-blue-600 font-bold">Sisihkan harta buat sesama, Biar pahala makin berlapis manis!</span>"`,
-            `"Main TikTok sampai pagi, Bangun tidur mata berair.<br><span class="text-blue-600 font-bold">Jangan lupa infaq hari ini, Biar rezeki mengalir cair!</span>"`,
-            `"Anak senja minum kopi, Sambil dengerin lagu galau.<br><span class="text-blue-600 font-bold">Daripada uang habis tak pasti, Mending infaq biar berkilau!</span>"`,
-            `"Beli kuota buat mabar, Malah sinyalnya hilang timbul.<br><span class="text-blue-600 font-bold">Sedekah itu bikin sabar, Pahala numpuk di alam kubur kumpul!</span>"`
-        ];
-
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         window.addEventListener('appinstalled', () => { deferredPrompt = null; document.getElementById('btn-install').style.display = 'none'; });
@@ -471,7 +440,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             initClock(); 
-            initPantun(); // Pantun diaktifkan kembali sesuai instruksi
             await loadDB();
             if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
                 const btnInstall = document.getElementById('btn-install'); if (btnInstall) btnInstall.style.display = 'none';
@@ -486,13 +454,6 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' };
             setInterval(() => { clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB"; }, 60000);
             clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB";
-        }
-        
-        function initPantun() {
-            const pantunEl = document.getElementById('pantun-text');
-            if(pantunEl) {
-                pantunEl.innerHTML = PANTUN_LIST[Math.floor(Math.random() * PANTUN_LIST.length)];
-            }
         }
 
         async function loadDB() {
@@ -933,74 +894,6 @@
             }, 300);
         }
 
-        // --- WALI MURID VIEW LOGIC ---
-        function setupMuridView() {
-            document.getElementById('murid-title-nama').textContent = session.user.nama;
-            document.getElementById('murid-title-kelas-only').textContent = session.user.kelas;
-            document.getElementById('murid-title-pres-only').textContent = session.user.presensi;
-            const imgMurid = document.getElementById('murid-foto-profil');
-            if (session.user.foto && session.user.foto.trim() !== '') { imgMurid.src = session.user.foto; } 
-            else { imgMurid.src = `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(session.user.nama)}&backgroundColor=b6e3f4,ffdfbf,c0aede,ffd5dc&radius=50`; }
-            renderMuridView();
-        }
-
-        function renderMuridView() {
-            const kls = session.user.kelas; const presensi = session.user.presensi; const nominal = getNominalKelas(kls); 
-            let monthTotal = 0, listHTML = '';
-            
-            let allFridays = getFridaysFromAcademicYear();
-            let monthsData = []; let currentMonth = -1; let currentGroup = null;
-            allFridays.forEach(f => {
-                if(f.getMonth() !== currentMonth) { if(currentGroup) monthsData.push(currentGroup); currentMonth = f.getMonth(); currentGroup = { monthStr: formatMonthID(getLocalYYYYMMDD(f).slice(0,7)), dates: [] }; }
-                currentGroup.dates.push(getLocalYYYYMMDD(f));
-            });
-            if(currentGroup) monthsData.push(currentGroup);
-
-            monthsData.forEach(mGroup => {
-                listHTML += `<div class="mb-4"><div class="inline-block bg-blue-100/50 text-blue-700 text-[9px] font-black px-3 py-1.5 rounded-lg mb-2 uppercase tracking-[0.1em] border border-blue-200">${mGroup.monthStr}</div><div class="grid grid-cols-2 gap-2">`;
-                mGroup.dates.forEach((dStr) => {
-                    const status = db.infaq[kls]?.[dStr]?.[presensi];
-                    let styleClass = 'bg-white border-gray-100', textRp = 'Belum', colorRp = 'text-gray-400', icon = '<i class="fas fa-clock text-gray-300"></i>';
-                    if (status === 'paid') { styleClass = 'bg-green-50 border-green-200'; textRp = formatRupiah(nominal); colorRp = 'text-green-600'; icon = '<i class="fas fa-check-circle text-green-500"></i>'; monthTotal += nominal; } 
-                    else if (status === 'libur') { styleClass = 'bg-red-50 border-red-100'; textRp = 'Libur'; colorRp = 'text-red-400'; icon = '<i class="fas fa-times-circle text-red-300"></i>'; }
-                    const dObj = new Date(dStr);
-                    listHTML += `<div class="${styleClass} border rounded-xl p-2 flex flex-col justify-center items-center text-center shadow-sm transition gap-1"><span class="text-[9px] text-gray-500 font-bold tracking-wide">TGL ${String(dObj.getDate()).padStart(2,'0')}</span><div class="text-xs font-black ${colorRp} my-0.5">${textRp}</div><div class="text-[10px]">${icon}</div></div>`;
-                });
-                listHTML += `</div></div>`;
-            });
-            document.getElementById('murid-jumat-list').innerHTML = listHTML; document.getElementById('murid-total-bulan').textContent = formatRupiah(monthTotal);
-        }
-
-        // --- ADMIN VIEW LOGIC ---
-        function setupAdminView() {
-            const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort(); const viewSel = document.getElementById('admin-view-class'); const reportSel = document.getElementById('admin-report-class');
-            let opts = classes.map(c => `<option value="${c}">Kelas ${c}</option>`).join('');
-            viewSel.innerHTML = (classes.length > 0) ? opts : '<option value="">Kosong</option>'; reportSel.innerHTML = '<option value="ALL">Semua Kelas</option>' + opts;
-            const imgAdmin = document.getElementById('admin-foto-profil');
-            if (db.users.admin[0]?.foto && db.users.admin[0].foto.trim() !== '') { imgAdmin.src = db.users.admin[0].foto; } else { imgAdmin.src = `https://ui-avatars.com/api/?name=Admin&background=3B82F6&color=fff&bold=true`; }
-            if (classes.length > 0) renderAdminClassView();
-        }
-
-        function renderAdminClassView() {
-            const kls = document.getElementById('admin-view-class').value; if (!kls) return;
-            const nominal = getNominalKelas(kls); const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
-            let totalMasuk = 0, tbody = '';
-            
-            if (students.length === 0) { tbody = `<tr><td colspan="4" class="text-center p-5 text-gray-400 text-[10px] font-medium">Belum ada data siswa.</td></tr>`; } 
-            else {
-                students.forEach(s => {
-                    let stTot = 0; if (db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => { if (db.infaq[kls][d][s.presensi] === 'paid') { stTot += nominal; totalMasuk += nominal; } }); }
-                    tbody += `<tr class="border-b border-gray-100 hover:bg-slate-50 transition"><td class="p-2 text-center text-gray-500">${s.presensi}</td><td class="p-2 font-bold text-gray-800">${s.nama}</td><td class="p-2 font-mono text-gray-400 text-[10px]">${s.kode}</td><td class="p-2 text-right font-black text-blue-600 bg-blue-50/30">${formatRupiah(stTot)}</td></tr>`;
-                });
-            }
-            
-            const p = db.pengeluaran[kls] || []; const totalKeluar = p.reduce((sum, item) => sum + item.amount, 0);
-            let am = document.getElementById('admin-tot-masuk'); if(am) am.textContent = formatRupiah(totalMasuk);
-            let ak = document.getElementById('admin-tot-keluar'); if(ak) ak.textContent = formatRupiah(totalKeluar);
-            let as = document.getElementById('admin-tot-saldo'); if(as) as.textContent = formatRupiah(totalMasuk - totalKeluar);
-            document.getElementById('admin-table').innerHTML = `<thead class="bg-slate-50 text-[9px] text-gray-500 uppercase tracking-wide border-b border-gray-200"><tr><th class="p-2 text-center w-10">No</th><th class="p-2">Nama Lengkap</th><th class="p-2">Kode Unik</th><th class="p-2 text-right">Total Infaq</th></tr></thead><tbody>${tbody}</tbody>`;
-        }
-
         function downloadAdminReport() {
             const targetClass = document.getElementById('admin-report-class').value;
             Swal.fire({ title: 'Menyiapkan Laporan...', html: 'Merender rekap laporan 1 Tahun Penuh...', allowOutsideClick: false, didOpen: () => { Swal.showLoading();
@@ -1010,8 +903,8 @@
                         let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
                         const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
 
-                        if (!cachedKopAtas) cachedKopAtas = await getBase64ImageOptimized(LINK_KOP_ATAS);
-                        if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH);
+                        if (!cachedKopAtas) cachedKopAtas = await getBase64ImageOptimized(LINK_KOP_ATAS, "image/jpeg");
+                        if (!cachedKopBawah) cachedKopBawah = await getBase64ImageOptimized(LINK_KOP_BAWAH, "image/png");
 
                         let hAtas = 80; let hBawah = 80;
                         if (cachedKopAtas) { const imgA = new Image(); imgA.src = cachedKopAtas; hAtas = Math.min((pageWidth * imgA.height) / imgA.width, 130); }
@@ -1085,10 +978,72 @@
             });
         }
 
+        // --- ADMIN VIEW LOGIC ---
+        function setupAdminView() {
+            const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort(); const viewSel = document.getElementById('admin-view-class'); const reportSel = document.getElementById('admin-report-class');
+            let opts = classes.map(c => `<option value="${c}">Kelas ${c}</option>`).join('');
+            viewSel.innerHTML = (classes.length > 0) ? opts : '<option value="">Kosong</option>'; reportSel.innerHTML = '<option value="ALL">Semua Kelas</option>' + opts;
+            const imgAdmin = document.getElementById('admin-foto-profil');
+            if (db.users.admin[0]?.foto && db.users.admin[0].foto.trim() !== '') { imgAdmin.src = db.users.admin[0].foto; } else { imgAdmin.src = `https://ui-avatars.com/api/?name=Admin&background=3B82F6&color=fff&bold=true`; }
+            if (classes.length > 0) renderAdminClassView();
+        }
+
+        function renderAdminClassView() {
+            const kls = document.getElementById('admin-view-class').value; if (!kls) return;
+            const nominal = getNominalKelas(kls); const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            let totalMasuk = 0, tbody = '';
+            
+            if (students.length === 0) { tbody = `<tr><td colspan="4" class="text-center p-5 text-gray-400 text-[10px] font-medium">Belum ada data siswa.</td></tr>`; } 
+            else {
+                students.forEach(s => {
+                    let stTot = 0; if (db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => { if (db.infaq[kls][d][s.presensi] === 'paid') { stTot += nominal; totalMasuk += nominal; } }); }
+                    tbody += `<tr class="border-b border-gray-100 hover:bg-slate-50 transition"><td class="p-2 text-center text-gray-500">${s.presensi}</td><td class="p-2 font-bold text-gray-800">${s.nama}</td><td class="p-2 font-mono text-gray-400 text-[10px]">${s.kode}</td><td class="p-2 text-right font-black text-blue-600 bg-blue-50/30">${formatRupiah(stTot)}</td></tr>`;
+                });
+            }
+            
+            const p = db.pengeluaran[kls] || []; const totalKeluar = p.reduce((s, item) => s + item.amount, 0);
+            document.getElementById('admin-tot-masuk').textContent = formatRupiah(totalMasuk); document.getElementById('admin-tot-keluar').textContent = formatRupiah(totalKeluar); document.getElementById('admin-tot-saldo').textContent = formatRupiah(totalMasuk - totalKeluar);
+            document.getElementById('admin-table').innerHTML = `<thead class="bg-slate-50 text-[9px] text-gray-500 uppercase tracking-wide border-b border-gray-200"><tr><th class="p-2 text-center w-10">No</th><th class="p-2">Nama Lengkap</th><th class="p-2">Kode Unik</th><th class="p-2 text-right">Total Infaq</th></tr></thead><tbody>${tbody}</tbody>`;
+        }
+
+        // --- WALI MURID VIEW LOGIC ---
+        function setupMuridView() {
+            document.getElementById('murid-title-nama').textContent = session.user.nama; document.getElementById('murid-title-kelas-only').textContent = session.user.kelas; document.getElementById('murid-title-pres-only').textContent = session.user.presensi;
+            const imgMurid = document.getElementById('murid-foto-profil');
+            if (session.user.foto && session.user.foto.trim() !== '') { imgMurid.src = session.user.foto; } else { imgMurid.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.nama)}&background=3B82F6&color=fff&bold=true`; }
+            renderMuridView();
+        }
+
+        function renderMuridView() {
+            const kls = session.user.kelas; const presensi = session.user.presensi; const nominal = getNominalKelas(kls); let monthTotal = 0, listHTML = '';
+            
+            let allFridays = getFridaysFromAcademicYear();
+            let monthsData = []; let currentMonth = -1; let currentGroup = null;
+            allFridays.forEach(f => {
+                if(f.getMonth() !== currentMonth) { if(currentGroup) monthsData.push(currentGroup); currentMonth = f.getMonth(); currentGroup = { monthStr: formatMonthID(getLocalYYYYMMDD(f).slice(0,7)), dates: [] }; }
+                currentGroup.dates.push(f);
+            });
+            if(currentGroup) monthsData.push(currentGroup);
+            
+            monthsData.forEach(mGroup => {
+                listHTML += `<div class="mb-6"><div class="inline-block bg-blue-100/50 text-blue-700 text-[10px] font-black px-3 py-1.5 rounded-lg mb-3 uppercase tracking-[0.1em] border border-blue-200">${mGroup.monthStr}</div><div class="grid grid-cols-2 gap-3">`;
+                mGroup.dates.forEach((f) => {
+                    const fStr = getLocalYYYYMMDD(f); const status = (db.infaq[kls] && db.infaq[kls][fStr]) ? db.infaq[kls][fStr][presensi] : null;
+                    let styleClass = 'bg-white border-gray-100', textRp = 'Belum', colorRp = 'text-gray-400', icon = '<i class="fas fa-clock text-gray-300"></i>';
+                    if (status === 'paid') { styleClass = 'bg-green-50 border-green-200'; textRp = formatRupiah(nominal); colorRp = 'text-green-600'; icon = '<i class="fas fa-check-circle text-green-500"></i>'; monthTotal += nominal; } 
+                    else if (status === 'libur') { styleClass = 'bg-red-50 border-red-100'; textRp = 'Libur'; colorRp = 'text-red-400'; icon = '<i class="fas fa-times-circle text-red-300"></i>'; }
+                    listHTML += `<div class="${styleClass} border rounded-xl p-3 flex flex-col justify-center items-center text-center shadow-sm hover:shadow-md transition gap-1"><span class="text-[9px] text-gray-500 font-bold tracking-wide">TGL ${String(f.getDate()).padStart(2,'0')}</span><div class="text-sm font-black ${colorRp} my-0.5">${textRp}</div><div class="text-[10px]">${icon}</div></div>`;
+                });
+                listHTML += `</div></div>`;
+            });
+            document.getElementById('murid-jumat-list').innerHTML = listHTML; document.getElementById('murid-total-bulan').textContent = formatRupiah(monthTotal);
+        }
+
+        // --- SISTEM CRUD LAINNYA ---
         function openSetNominalModal() {
             let html = '<div class="space-y-2 text-left mt-2 max-h-64 overflow-y-auto pr-2">'; const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort();
             classes.forEach(c => { html += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm"><span class="font-bold text-gray-700 text-xs">Kelas ${c}</span><div class="flex items-center"><span class="text-[10px] text-gray-400 font-bold mr-1">Rp</span><input type="number" id="nom-${c}" value="${getNominalKelas(c)}" class="border border-gray-200 rounded p-1.5 w-20 text-right font-mono font-bold text-orange-600 outline-none bg-orange-50/50 text-[10px]"></div></div>`; }); html += '</div>';
-            Swal.fire({ title: '<span class="text-sm font-black">Set Nominal Default</span>', html: html, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-3xl w-[85%] max-w-sm p-4', confirmButton: 'btn-click bg-orange-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, buttonsStyling: false, preConfirm: () => { let res = {}; classes.forEach(c => { res[c] = parseInt(document.getElementById(`nom-${c}`).value) || 0; }); return res; } }).then(result => { if (result.isConfirmed) { db.config.defaultNominal = result.value; saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-3xl w-[70%]'}}); } });
+            Swal.fire({ title: '<span class="text-sm font-black">Set Nominal Default</span>', html: html, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-2xl w-[85%] max-w-sm p-4', confirmButton: 'bg-orange-500 text-white px-4 py-2 rounded-lg text-[10px] font-bold', cancelButton: 'bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-[10px] font-bold' }, buttonsStyling: false, preConfirm: () => { let res = {}; classes.forEach(c => { res[c] = parseInt(document.getElementById(`nom-${c}`).value) || 0; }); return res; } }).then(result => { if (result.isConfirmed) { db.config.defaultNominal = result.value; saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-2xl w-[70%]'}}); } });
         }
 
         window.updateEditUserList = () => {
@@ -1115,12 +1070,12 @@
         }
 
         function openEditAccountModal() {
-            Swal.fire({ title: '<span class="text-sm font-black">Manajemen Akun</span>', html: `<div class="flex flex-col gap-2 mt-2 text-left"><select id="edit-role" onchange="window.updateEditUserList()" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] outline-none bg-white"><option value="">-- Level --</option><option value="wali">Wali Kelas</option><option value="murid">Wali Murid</option><option value="admin">Admin</option></select><select id="edit-user-select" onchange="window.updateEditFields()" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] outline-none bg-white hidden"></select><div id="edit-fields" class="flex-col gap-2 hidden border-t border-gray-100 pt-2"><input type="text" id="edit-kelas" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Kelas"><input type="text" id="edit-id" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Presensi / Username"><input type="text" id="edit-nama" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Nama"><input type="url" id="edit-foto" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Link Foto"><input type="text" id="edit-pass" class="w-full p-2 border border-orange-200 rounded-lg text-[10px] font-mono font-bold text-orange-600 bg-orange-50/50" placeholder="KODE"><button type="button" id="btn-delete-account" onclick="window.deleteSelectedAccount()" class="w-full text-red-500 border border-red-200 py-1.5 rounded-lg text-[9px] font-bold mt-1"><i class="fas fa-trash-alt mr-1"></i> HAPUS</button></div></div>`, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Tutup', customClass: { popup: 'rounded-2xl w-[85%] max-w-md p-4 bg-slate-50', confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold shadow-md', cancelButton: 'bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-[10px] font-bold' }, buttonsStyling: false, preConfirm: () => { const role = document.getElementById('edit-role').value; const idx = document.getElementById('edit-user-select').value; if (!role || idx === '') return false; return { role, idx, kelas: document.getElementById('edit-kelas').value, id: document.getElementById('edit-id').value, nama: document.getElementById('edit-nama').value, pass: document.getElementById('edit-pass').value, foto: document.getElementById('edit-foto').value } } }).then(res => { if (res.isConfirmed && res.value) { const data = res.value; if (!data.pass) return; if (data.role === 'admin') { db.users.admin[data.idx].username = data.id; db.users.admin[data.idx].kode = data.pass; db.users.admin[data.idx].foto = data.foto; } else if (data.role === 'wali') { db.users.wali[data.idx].kelas = data.kelas; db.users.wali[data.idx].nama = data.nama; db.users.wali[data.idx].kode = data.pass; db.users.wali[data.idx].foto = data.foto; } else if (data.role === 'murid') { db.users.murid[data.idx].kelas = data.kelas; db.users.murid[data.idx].presensi = data.id; db.users.murid[data.idx].nama = data.nama; db.users.murid[data.idx].kode = data.pass; db.users.murid[data.idx].foto = data.foto; } saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1500, customClass:{popup:'rounded-2xl w-[70%]'}}); } });
+            Swal.fire({ title: '<span class="text-sm font-black">Manajemen Akun</span>', html: `<div class="flex flex-col gap-2 mt-2 text-left"><select id="edit-role" onchange="window.updateEditUserList()" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] outline-none bg-white"><option value="">-- Level --</option><option value="wali">Wali Kelas</option><option value="murid">Wali Murid</option><option value="admin">Admin</option></select><select id="edit-user-select" onchange="window.updateEditFields()" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] outline-none bg-white hidden"></select><div id="edit-fields" class="flex-col gap-2 hidden border-t border-gray-100 pt-2"><input type="text" id="edit-kelas" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Kelas"><input type="text" id="edit-id" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Presensi / Username"><input type="text" id="edit-nama" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Nama"><input type="url" id="edit-foto" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] bg-white" placeholder="Link Foto"><input type="text" id="edit-pass" class="w-full p-2 border border-orange-200 rounded-lg text-[10px] font-mono font-bold text-orange-600 bg-orange-50/50" placeholder="KODE"><button type="button" id="btn-delete-account" onclick="window.deleteSelectedAccount()" class="w-full text-red-500 border border-red-200 py-1.5 rounded-lg text-[9px] font-bold mt-1"><i class="fas fa-trash-alt mr-1"></i> HAPUS</button></div></div>`, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Tutup', customClass: { popup: 'rounded-2xl w-[85%] max-w-md p-4 bg-slate-50', confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold shadow-md', cancelButton: 'bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-[10px] font-bold' }, buttonsStyling: false, preConfirm: () => { const role = document.getElementById('edit-role').value; const idx = document.getElementById('edit-user-select').value; if (!role || idx === '') return false; return { role, idx, kelas: document.getElementById('edit-kelas').value, id: document.getElementById('edit-id').value, nama: document.getElementById('edit-nama').value, pass: document.getElementById('edit-pass').value, foto: document.getElementById('edit-foto').value } } }).then(res => { if (res.isConfirmed && res.value) { const data = res.value; if (!data.pass) return; if (data.role === 'admin') { db.users.admin[data.idx].username = data.id; db.users.admin[data.idx].kode = data.pass; db.users.admin[data.idx].foto = data.foto; } else if (data.role === 'wali') { db.users.wali[data.idx].kelas = data.kelas; db.users.wali[data.idx].nama = data.nama; db.users.wali[data.idx].kode = data.pass; db.users.wali[data.idx].foto = data.foto; } else if (data.role === 'murid') { db.users.murid[data.idx].kelas = data.kelas; db.users.murid[data.idx].presensi = data.id; db.users.murid[data.idx].nama = data.nama; db.users.murid[data.idx].kode = data.pass; db.users.murid[data.idx].foto = data.foto; } saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-2xl w-[70%]'}}); } });
         }
 
         function openAddStudentModal() {
             const kls = document.getElementById('admin-view-class').value; if (!kls) return Swal.fire({icon:'warning', title:'Pilih Kelas', customClass: {popup: 'rounded-2xl w-[70%]'}});
-            Swal.fire({ title: `<span class="text-sm font-black">Tambah Siswa ${kls}</span>`, html: `<div class="flex flex-col gap-2 text-left mt-2"><input type="text" id="add-s-presensi" class="w-full p-2 border border-gray-200 rounded-lg text-xs" placeholder="No Presensi"><input type="text" id="add-s-nama" class="w-full p-2 border border-gray-200 rounded-lg text-xs" placeholder="Nama Lengkap"><input type="text" id="add-s-kode" class="w-full p-2 border border-gray-200 rounded-lg text-xs font-mono" placeholder="Kode Login"></div>`, showCancelButton: true, confirmButtonText: 'Tambah', cancelButtonText: 'Batal', customClass: { popup: 'rounded-2xl w-[85%] p-4', confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold', cancelButton: 'bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, buttonsStyling: false, preConfirm: () => { return { presensi: document.getElementById('add-s-presensi').value, nama: document.getElementById('add-s-nama').value, kode: document.getElementById('add-s-kode').value } } }).then(res => { if (res.isConfirmed) { const data = res.value; if (!data.presensi || !data.nama || !data.kode) return; if (db.users.murid.find(m => m.kelas === kls && m.presensi === data.presensi)) return Swal.fire({icon:'error', title:'Presensi ada', customClass:{popup:'rounded-2xl'}}); db.users.murid.push({ kelas: kls, presensi: data.presensi, nama: data.nama, kode: data.kode, foto: "" }); saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Berhasil', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-2xl w-[70%]'}}); } });
+            Swal.fire({ title: `<span class="text-sm font-black">Tambah Siswa ${kls}</span>`, html: `<div class="flex flex-col gap-2 text-left mt-2"><input type="text" id="add-s-presensi" class="w-full p-2 border border-gray-200 rounded-lg text-[10px]" placeholder="No Presensi"><input type="text" id="add-s-nama" class="w-full p-2 border border-gray-200 rounded-lg text-[10px]" placeholder="Nama Lengkap"><input type="text" id="add-s-kode" class="w-full p-2 border border-gray-200 rounded-lg text-[10px] font-mono" placeholder="Kode Login"></div>`, showCancelButton: true, confirmButtonText: 'Tambah', cancelButtonText: 'Batal', customClass: { popup: 'rounded-2xl w-[85%] p-4', confirmButton: 'bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold', cancelButton: 'bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-[10px] font-bold' }, buttonsStyling: false, preConfirm: () => { return { presensi: document.getElementById('add-s-presensi').value, nama: document.getElementById('add-s-nama').value, kode: document.getElementById('add-s-kode').value } } }).then(res => { if (res.isConfirmed) { const data = res.value; if (!data.presensi || !data.nama || !data.kode) return; if (db.users.murid.find(m => m.kelas === kls && m.presensi === data.presensi)) return Swal.fire({icon:'error', title:'Presensi ada', customClass:{popup:'rounded-2xl'}}); db.users.murid.push({ kelas: kls, presensi: data.presensi, nama: data.nama, kode: data.kode, foto: "" }); saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Berhasil', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-2xl w-[70%]'}}); } });
         }
 
         function downloadFormatExcel() {

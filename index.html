@@ -92,7 +92,7 @@
     <header class="fixed top-0 left-0 w-full h-[50px] z-[100] bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm flex items-center justify-between px-4 transition-all duration-300">
         <div class="flex items-center gap-2">
             <div class="w-6 h-6 bg-blue-900 rounded-lg flex items-center justify-center text-white font-black text-xs">K</div>
-            <p class="text-[10px] font-black text-gray-800 tracking-[0.1em] uppercase">SDIT MUHAMMADIYAH AL KAUTSAR</p>
+            <p class="text-[9px] font-black text-gray-800 tracking-[0.1em] uppercase">SDIT MUHAMMADIYAH AL KAUTSAR</p>
         </div>
         <div class="flex flex-col items-center absolute left-1/2 -translate-x-1/2">
             <p class="text-[10px] font-bold text-blue-900 tracking-[0.2em] uppercase">ELINA <span class="text-orange-500 font-bold mx-1">|</span> BY ZIVI•AI</p>
@@ -439,7 +439,6 @@
             if (SCRIPT_URL && SCRIPT_URL.includes("script.google.com")) {
                 try {
                     Swal.fire({ title: 'Menyinkronkan Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                    // Anti caching
                     const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime()); 
                     if (!response.ok) throw new Error("Jaringan bermasalah");
                     const text = await response.text(); 
@@ -465,24 +464,26 @@
             if (local) { 
                 db = JSON.parse(local); 
             } else {
-                // Initial Default Mock Seeds (Wali Kelas & Wali Murid)
-                db.users.wali.push({ kelas: '6A', nama: 'Budi Santoso, S.Pd.', kode: '123' });
-                db.users.wali.push({ kelas: '6B', nama: 'Siti Aminah, M.Pd.', kode: '123' });
+                db.users.wali.push({ kelas: '4D', nama: 'Budi Santoso, S.Pd.', kode: '123' });
+                db.users.wali.push({ kelas: '3D', nama: 'Siti Aminah, M.Pd.', kode: '123' });
                 
-                db.users.murid.push({ kelas: '6A', presensi: '01', nama: 'Andi Saputra', kode: '111' });
-                db.users.murid.push({ kelas: '6A', presensi: '02', nama: 'Budi Raharjo', kode: '222' });
-                db.users.murid.push({ kelas: '6B', presensi: '01', nama: 'Citra Kirana', kode: '333' });
-                db.users.murid.push({ kelas: '6B', presensi: '02', nama: 'Dinda Permata', kode: '444' });
+                db.users.murid.push({ kelas: '4D', presensi: '01', nama: 'ADEEVA AFSHEEN ABDILLAH', kode: '111' });
+                db.users.murid.push({ kelas: '4D', presensi: '02', nama: 'ALILA KAIA MAULANA', kode: '222' });
+                db.users.murid.push({ kelas: '3D', presensi: '01', nama: 'AFIZA AZKAYRA SETYAWAN', kode: '333' });
+                db.users.murid.push({ kelas: '3D', presensi: '02', nama: 'AHNAF HASHIF WIBOWO', kode: '444' });
                 
-                db.config.defaultNominal['6A'] = 5000;
-                db.config.defaultNominal['6B'] = 5000;
+                db.config.defaultNominal['4D'] = 7000;
+                db.config.defaultNominal['3D'] = 5000;
                 
-                db.infaq['6A'] = {
-                    '2026-06-05': { '01': 'paid', '02': 'libur' },
-                    '2026-06-12': { '01': 'paid', '02': 'paid' }
+                db.infaq['4D'] = {
+                    '2026-07-03': { '01': 'paid', '02': 'paid' },
+                    '2026-07-10': { '01': 'paid', '02': 'paid' },
+                    '2026-07-17': { '01': 'libur', '02': 'none' },
+                    '2026-07-24': { '01': 'paid', '02': 'none' },
+                    '2026-08-07': { '01': 'paid', '02': 'none' }
                 };
                 
-                db.pengeluaran['6A'] = [{ id: '1', date: '2026-06-10', desc: 'Beli Sapu Kelas', amount: 15000 }];
+                db.pengeluaran['4D'] = [];
                 
                 saveDB();
             }
@@ -505,7 +506,6 @@
             if(el) el.style.display = 'none'; 
         }
 
-        // Secure locking queue system to prevent overwrites / race conditions
         let isSyncing = false;
         let pendingSync = false;
 
@@ -1131,7 +1131,6 @@
         // =========================================================================
         // PROGRAMMATIC KOP SURAT IMAGE UTILITY (FETCHING FROM GITHUB)
         // =========================================================================
-        
         async function fetchImageToDataURL(url) {
             try {
                 const response = await fetch(url);
@@ -1147,56 +1146,22 @@
             }
         }
 
-        // Menggambar KOP Resmi Sekolah secara dinamis menggunakan KOP ELINA ATAS PUTIH.jpg & KOP ELINA BAWAH.png yang sudah ada di GitHub!
-        async function drawOfficialKop(doc, width, margin) {
-            const dataUrlAtas = await fetchImageToDataURL("KOP ELINA ATAS PUTIH.jpg");
-            if (dataUrlAtas) {
-                // Dimensi KOP Atas Standard (Aman di Portrait/Landscape)
-                // Stretch KOP Atas agar pas lebar kertas dikurangi margin kiri-kanan
-                doc.addImage(dataUrlAtas, 'JPEG', margin, 15, width - (margin * 2), 65);
-            } else {
-                // Fallback jika asset hilang (Menggunakan Vektor Cadangan agar laporan tetap rapi)
-                doc.setFillColor(30, 58, 138); 
-                doc.rect(0, 0, width, 14, 'F');
-                doc.setFillColor(249, 115, 22); 
-                doc.rect(0, 14, width, 4, 'F');
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.setTextColor(30, 58, 138);
-                doc.text("MAJELIS PENDIDIKAN DASAR MENENGAH DAN PENDIDIKAN NONFORMAL", width / 2, 36, { align: "center" });
-                doc.text("PIMPINAN CABANG MUHAMMADIYAH KARTASURA", width / 2, 48, { align: "center" });
-                doc.setFontSize(14);
-                doc.text("SDIT MUHAMMADIYAH AL KAUTSAR", width / 2, 64, { align: "center" });
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(100, 116, 139);
-                doc.text("Alamat: Gg. Al Kautsar, Gumpang, Kartasura, Sukoharjo  -  Telp: (0271) 712345", width / 2, 78, { align: "center" });
-            }
-
-            // Double border line pembatas kop surat
-            doc.setDrawColor(30, 58, 138);
-            doc.setLineWidth(2.5);
-            doc.line(margin, 88, width - margin, 88);
-            doc.setLineWidth(0.75);
-            doc.line(margin, 92, width - margin, 92);
-        }
-
-        async function drawOfficialFooter(doc, width, height, margin) {
-            const dataUrlBawah = await fetchImageToDataURL("KOP ELINA BAWAH.png");
-            if (dataUrlBawah) {
-                doc.addImage(dataUrlBawah, 'PNG', margin, height - 70, width - (margin * 2), 55);
-            } else {
-                // Fallback footer
-                doc.setFillColor(30, 58, 138); 
-                doc.rect(0, height - 12, width, 12, 'F');
-                doc.setFillColor(249, 115, 22); 
-                doc.rect(0, height - 16, width, 4, 'F');
-            }
-
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(7);
-            doc.setTextColor(148, 163, 184);
-            doc.text("Sistem Keuangan Infaq Sekolah ELINA - Cetakan Sah Terverifikasi Otomatis", margin, height - 22);
+        // Helper to obtain actual image dimensions and compute aspect ratios securely
+        function getImageDimensions(dataUrl) {
+            return new Promise((resolve) => {
+                if (!dataUrl) {
+                    resolve({ width: 1000, height: 140, ratio: 1000 / 140 });
+                    return;
+                }
+                const img = new Image();
+                img.onload = () => {
+                    resolve({ width: img.width, height: img.height, ratio: img.width / img.height });
+                };
+                img.onerror = () => {
+                    resolve({ width: 1000, height: 140, ratio: 1000 / 140 });
+                };
+                img.src = dataUrl;
+            });
         }
 
         // --- EXPORT PDF UNTUK WALI KELAS ---
@@ -1248,14 +1213,22 @@
                     const kls = session.user.kelas; 
                     const nominal = getNominalKelas(kls);
                     const students = db.users.murid.filter(m => m.kelas === kls && selectedStudentsArr.includes(m.presensi)).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
-                    const isAllStudents = (selectedStudentsArr.length === db.users.murid.filter(m => m.kelas === kls).length);
                     
-                    let orientation = isAllStudents ? 'l' : 'p';
-                    let pw = isAllStudents ? 935.43 : 612.28; 
-                    let ph = isAllStudents ? 612.28 : 935.43;
-                    
-                    const doc = new jsPDF(orientation, 'pt', [pw, ph]);
+                    // Sesuai dengan instruksi FOTO 2: Cetak semua siswa/banyak siswa tetap "satu siswa satu halaman", layout Potret
+                    const pw = 612.28; // Portrait Letter Width
+                    const ph = 792.00; // Portrait Letter Height
+                    const doc = new jsPDF('p', 'pt', [pw, ph]);
                     const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    // Memuat KOP Atas & Bawah
+                    const cachedKopAtas = await fetchImageToDataURL("KOP ELINA ATAS PUTIH.jpg");
+                    const cachedKopBawah = await fetchImageToDataURL("KOP ELINA BAWAH.png");
+
+                    // Hitung aspect ratio KOP secara dinamis agar pas penuh kiri-kanan (0 margin) dan tidak gepeng/lonjong
+                    const dimsAtas = await getImageDimensions(cachedKopAtas);
+                    const hAtas = pw / dimsAtas.ratio;
+                    const dimsBawah = await getImageDimensions(cachedKopBawah);
+                    const hBawah = pw / dimsBawah.ratio;
 
                     let allFridays = getFridaysFromAcademicYear();
                     let monthsData = []; 
@@ -1278,150 +1251,100 @@
                     const p = db.pengeluaran[kls] || []; 
                     const totalKeluarKelas = p.reduce((sum, i) => sum + i.amount, 0);
 
-                    if (isAllStudents) {
-                        // Landscape Rekap Kelas
-                        await drawOfficialKop(doc, pw, 40);
-                        await drawOfficialFooter(doc, pw, ph, 40);
+                    // Loop mencetak individual student per page (Portrait)
+                    for(let idx=0; idx<students.length; idx++) {
+                        const s = students[idx];
+                        if (idx > 0) doc.addPage();
+                        
+                        // Gambar KOP Atas penuh dari ujung kiri ke ujung kanan (0 margin)
+                        if (cachedKopAtas) {
+                            doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pw, hAtas);
+                        } else {
+                            // Fallback vector kop jika berkas gambar tidak ditemukan
+                            doc.setFillColor(30, 58, 138); doc.rect(0, 0, pw, 14, 'F');
+                            doc.setFillColor(249, 115, 22); doc.rect(0, 14, pw, 4, 'F');
+                        }
 
-                        let currentY = 120;
+                        // Gambar KOP Bawah penuh di dasar kertas (0 margin)
+                        if (cachedKopBawah) {
+                            doc.addImage(cachedKopBawah, 'PNG', 0, ph - hBawah, pw, hBawah);
+                        }
+
+                        let currentY = hAtas + 15;
                         doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 41, 59); 
-                        doc.text(`LAPORAN REKAP INFAQ - TAHUN AJARAN - KELAS ${kls}`, 40, currentY);
+                        doc.text(`LAPORAN KEUANGAN PERSONAL INFAQ SISWA`, 40, currentY);
                         doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 116, 139); 
-                        doc.text(`Tanggal Cetak: ${printDate}`, 40, currentY + 12);
-
-                        currentY += 22; const bW = (pw - 80) / 3; const bH = 35;
+                        doc.text(`Tanggal Cetak: ${printDate} WIB`, 40, currentY + 12);
+                        
+                        currentY += 22; const bW = (pw - 80) / 3; const bH = 35; 
                         doc.setFillColor(30, 58, 138); doc.rect(40, currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK KELAS", 48, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 48, currentY + 26);
                         doc.setFillColor(249, 115, 22); doc.rect(40 + bW, currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR KELAS", 40 + bW + 8, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + bW + 8, currentY + 26);
                         doc.setFillColor(16, 185, 129); doc.rect(40 + (bW * 2), currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO KAS KELAS", 40 + (bW * 2) + 8, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (bW * 2) + 8, currentY + 26);
-
                         currentY += bH + 15;
-                        let bodyR = [];
-                        students.forEach(s => {
-                            let row = [s.presensi, s.nama]; 
-                            let stTotal = 0;
-                            monthsData.forEach(mGroup => {
-                                let mTotal = 0; 
-                                mGroup.dates.forEach(d => { if (db.infaq[kls]?.[d]?.[s.presensi] === 'paid') { mTotal += nominal; stTotal += nominal; } });
-                                row.push(mTotal); 
-                            });
-                            row.push(formatRupiah(stTotal).replace('Rp','').trim()); 
-                            bodyR.push(row);
+
+                        doc.setFillColor(241, 245, 249); doc.roundedRect(40, currentY, pw - 80, 22, 4, 4, 'F');
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 41, 59); 
+                        doc.text(`No Presensi: ${s.presensi}   |   Nama Siswa: ${s.nama.toUpperCase()}   |   Kelas: ${kls}`, 48, currentY + 14);
+
+                        let body = []; let totalSiswaMasuk = 0;
+                        monthsData.forEach(mGroup => {
+                            let row = [mGroup.monthStr]; let mTotal = 0;
+                            for(let w=0; w<5; w++) {
+                                if(mGroup.dates[w]) {
+                                    const stat = db.infaq[kls]?.[mGroup.dates[w]]?.[s.presensi];
+                                    if (stat === 'paid') { row.push('LUNAS'); mTotal += nominal; totalSiswaMasuk += nominal; }
+                                    else if (stat === 'libur') row.push('LIBUR'); else row.push('-');
+                                } else row.push('');
+                            }
+                            row.push(formatRupiah(mTotal).replace('Rp','').trim()); body.push(row);
                         });
+                        body.push(["TOTAL KESELURUHAN INFAQ SEMESTER", "", "", "", "", "", formatRupiah(totalSiswaMasuk)]);
 
                         doc.autoTable({
-                            startY: currentY, head: [['No', 'Nama Siswa', ...monthsData.map(m => m.monthStr), 'Total']], body: bodyR, theme: 'plain', 
-                            styles: { fontSize: 8, cellPadding: 5, halign: 'center', valign: 'middle' }, columnStyles: { 1: { halign: 'left', cellWidth: 120 } }, margin: { top: 110, left: 40, right: 40, bottom: 85 },
+                            startY: currentY + 28, 
+                            head: [['Bulan', 'Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4', 'Pekan 5', 'Total (Rp)']], 
+                            body: body, 
+                            theme: 'plain', 
+                            styles: { halign: 'center', valign: 'middle', cellPadding: 5, fontSize: 8 }, 
+                            columnStyles: { 0: { halign: 'left', fontStyle: 'bold', textColor: [51, 65, 85], cellWidth: 80 }, 6: { halign: 'right', fontStyle: 'bold', textColor: [22, 163, 74] } }, 
+                            margin: { left: 40, right: 40, bottom: hBawah + 10 },
                             willDrawCell: function(data) { data.cell.text = ''; },
-                            didDrawCell: function(data) {
+                            didDrawCell: function (data) {
                                 let x = data.cell.x; let y = data.cell.y; let w = data.cell.width; let h = data.cell.height; let text = data.cell.raw;
                                 if (data.section === 'head') {
-                                    doc.setFillColor(30, 58, 138); doc.roundedRect(x+1, y+1, w-2, h-2, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-                                    if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 3); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
+                                    doc.setTextColor(100, 116, 139); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+                                    if(data.column.index === 0) doc.text(text, x + 5, y + h/2 + 3); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
                                 } else if (data.section === 'body') {
-                                    if (data.column.index === 0 || data.column.index === 1) {
-                                        doc.setTextColor(51, 65, 85); doc.setFont('helvetica', data.column.index===1 ? 'bold' : 'normal');
-                                        if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 3, {maxWidth: 110}); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
-                                    } else if (data.column.index >= 2 && data.column.index <= 13) {
-                                        let val = parseInt(text); let px = x + 2; let py = y + 2; let pw = w - 4; let ph = h - 4;
-                                        if (val > 0) { doc.setFillColor(34, 197, 94); doc.roundedRect(px, py, pw, ph, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text(formatRupiah(val).replace('Rp','').trim(), x + w/2, y + h/2 + 2, {align: 'center'}); } 
-                                        else { doc.setFillColor(241, 245, 249); doc.roundedRect(px, py, pw, ph, 3, 3, 'F'); doc.setTextColor(148, 163, 184); doc.setFontSize(7); doc.text("0", x + w/2, y + h/2 + 2, {align: 'center'}); }
-                                    } else if (data.column.index === 14) { doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'}); }
+                                    if (data.row.index === body.length - 1) {
+                                        doc.setFillColor(241, 245, 249); doc.rect(x, y, w, h, 'F');
+                                        if (data.column.index === 0) { doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + 5, y + h/2 + 3); }
+                                        else if (data.column.index === 6) { doc.setTextColor(22, 163, 74); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'}); }
+                                        return;
+                                    }
+                                    if (data.column.index === 0) {
+                                        doc.setTextColor(51, 65, 85); doc.setFont('helvetica', 'bold'); doc.text(text, x + 5, y + h/2 + 3);
+                                    } else if (data.column.index >= 1 && data.column.index <= 5) {
+                                        let py = y + 2; let ph = h - 4; let px = x + 3; let pw = w - 6;
+                                        if (text === 'LUNAS') { doc.setFillColor(34, 197, 94); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(255); doc.setFontSize(6); doc.text("LUNAS", x + w/2, y + h/2 + 2, {align: 'center'}); } 
+                                        else if (text === 'LIBUR') { doc.setFillColor(248, 113, 113); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(255); doc.setFontSize(6); doc.text("LIBUR", x + w/2, y + h/2 + 2, {align: 'center'}); } 
+                                        else if (text === '-') { doc.setFillColor(241, 245, 249); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(148, 163, 184); doc.setFontSize(7); doc.text("-", x + w/2, y + h/2 + 2, {align: 'center'}); }
+                                    } else if (data.column.index === 6) {
+                                        doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'});
+                                    }
                                     doc.setDrawColor(241, 245, 249); doc.line(x, y + h, x + w, y + h);
                                 }
                             }
                         });
 
-                        // Signature Pad
-                        let pY = doc.lastAutoTable.finalY + 30;
-                        if (pY < ph - 120) {
-                            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(51, 65, 85);
-                            doc.text("Mengetahui,", 40, pY);
-                            doc.text("Kepala Sekolah SDIT Muhammadiyah Al Kautsar", 40, pY + 12);
-                            doc.text("Wali Kelas,", pw - 180, pY + 12);
-                            
-                            doc.setFont('helvetica', 'bold'); doc.text("__________________________", 40, pY + 60);
-                            doc.text(session.user.nama, pw - 180, pY + 60);
-                        }
-
-                    } else {
-                        // Portrait Individual Student Reports
-                        for(let idx=0; idx<students.length; idx++) {
-                            const s = students[idx];
-                            if (idx > 0) doc.addPage();
-                            await drawOfficialKop(doc, pw, 40);
-                            await drawOfficialFooter(doc, pw, ph, 40);
-
-                            let currentY = 120;
-                            doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 41, 59); 
-                            doc.text(`LAPORAN KEUANGAN PERSONAL INFAQ SISWA`, 40, currentY);
-                            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 116, 139); 
-                            doc.text(`Tanggal Cetak: ${printDate} WIB`, 40, currentY + 12);
-                            
-                            currentY += 22; const bW = (pw - 80) / 3; const bH = 35; 
-                            doc.setFillColor(30, 58, 138); doc.rect(40, currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL MASUK KELAS", 48, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas), 48, currentY + 26);
-                            doc.setFillColor(249, 115, 22); doc.rect(40 + bW, currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("TOTAL KELUAR KELAS", 40 + bW + 8, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalKeluarKelas), 40 + bW + 8, currentY + 26);
-                            doc.setFillColor(16, 185, 129); doc.rect(40 + (bW * 2), currentY, bW - 5, bH, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text("SISA SALDO KAS KELAS", 40 + (bW * 2) + 8, currentY + 12); doc.setFontSize(11); doc.text(formatRupiah(totalMasukKelas - totalKeluarKelas), 40 + (bW * 2) + 8, currentY + 26);
-                            currentY += bH + 15;
-
-                            doc.setFillColor(241, 245, 249); doc.roundedRect(40, currentY, pw - 80, 22, 4, 4, 'F');
-                            doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 41, 59); 
-                            doc.text(`No Presensi: ${s.presensi}   |   Nama Siswa: ${s.nama.toUpperCase()}   |   Kelas: ${kls}`, 48, currentY + 14);
-
-                            let body = []; let totalSiswaMasuk = 0;
-                            monthsData.forEach(mGroup => {
-                                let row = [mGroup.monthStr]; let mTotal = 0;
-                                for(let w=0; w<5; w++) {
-                                    if(mGroup.dates[w]) {
-                                        const stat = db.infaq[kls]?.[mGroup.dates[w]]?.[s.presensi];
-                                        if (stat === 'paid') { row.push('LUNAS'); mTotal += nominal; totalSiswaMasuk += nominal; }
-                                        else if (stat === 'libur') row.push('LIBUR'); else row.push('-');
-                                    } else row.push('');
-                                }
-                                row.push(formatRupiah(mTotal).replace('Rp','').trim()); body.push(row);
-                            });
-                            body.push(["TOTAL KESELURUHAN INFAQ SEMESTER", "", "", "", "", "", formatRupiah(totalSiswaMasuk)]);
-
-                            doc.autoTable({
-                                startY: currentY + 28, head: [['Bulan', 'Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4', 'Pekan 5', 'Total (Rp)']], body: body, theme: 'plain', 
-                                styles: { halign: 'center', valign: 'middle', cellPadding: 5, fontSize: 8 }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold', textColor: [51, 65, 85], cellWidth: 80 }, 6: { halign: 'right', fontStyle: 'bold', textColor: [22, 163, 74] } }, margin: { left: 40, right: 40, bottom: 85 },
-                                willDrawCell: function(data) { data.cell.text = ''; },
-                                didDrawCell: function (data) {
-                                    let x = data.cell.x; let y = data.cell.y; let w = data.cell.width; let h = data.cell.height; let text = data.cell.raw;
-                                    if (data.section === 'head') {
-                                        doc.setTextColor(100, 116, 139); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-                                        if(data.column.index === 0) doc.text(text, x + 5, y + h/2 + 3); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
-                                    } else if (data.section === 'body') {
-                                        if (data.row.index === body.length - 1) {
-                                            doc.setFillColor(241, 245, 249); doc.rect(x, y, w, h, 'F');
-                                            if (data.column.index === 0) { doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + 5, y + h/2 + 3); }
-                                            else if (data.column.index === 6) { doc.setTextColor(22, 163, 74); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'}); }
-                                            return;
-                                        }
-                                        if (data.column.index === 0) {
-                                            doc.setTextColor(51, 65, 85); doc.setFont('helvetica', 'bold'); doc.text(text, x + 5, y + h/2 + 3);
-                                        } else if (data.column.index >= 1 && data.column.index <= 5) {
-                                            let py = y + 2; let ph = h - 4; let px = x + 3; let pw = w - 6;
-                                            if (text === 'LUNAS') { doc.setFillColor(34, 197, 94); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(255); doc.setFontSize(6); doc.text("LUNAS", x + w/2, y + h/2 + 2, {align: 'center'}); } 
-                                            else if (text === 'LIBUR') { doc.setFillColor(248, 113, 113); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(255); doc.setFontSize(6); doc.text("LIBUR", x + w/2, y + h/2 + 2, {align: 'center'}); } 
-                                            else if (text === '-') { doc.setFillColor(241, 245, 249); doc.roundedRect(px, py, pw, ph, 4, 4, 'F'); doc.setTextColor(148, 163, 184); doc.setFontSize(7); doc.text("-", x + w/2, y + h/2 + 2, {align: 'center'}); }
-                                        } else if (data.column.index === 6) {
-                                            doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'});
-                                        }
-                                        doc.setDrawColor(241, 245, 249); doc.line(x, y + h, x + w, y + h);
-                                    }
-                                }
-                            });
-
-                            let sY = doc.lastAutoTable.finalY + 15;
-                            doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 41, 59); doc.text(`Transparansi Arus Keluar Kas Kelas:`, 40, sY);
-                            if (p.length > 0) {
-                                let dataP = []; p.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => { dataP.push([formatDateID(item.date), item.desc, formatRupiah(item.amount).replace('Rp','').trim()]); });
-                                doc.autoTable({ startY: sY + 6, head: [['Tanggal', 'Keperluan Pengeluaran Kas', 'Nominal (Rp)']], body: dataP, theme: 'plain', headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontSize: 7, cellPadding: 4 }, bodyStyles: { fontSize: 7, cellPadding: 4, textColor: [100, 116, 139] }, columnStyles: { 2: { halign: 'right', fontStyle: 'bold', textColor: [220, 38, 38] } }, margin: { left: 40, right: 40, bottom: 85 }, willDrawCell: function(data){ if(data.section==='body'){ doc.setDrawColor(241, 245, 249); doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height); } } });
-                            } else { doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(156, 163, 175); doc.text(`Belum ada rekap pengeluaran kas dicatat oleh Wali Kelas.`, 40, sY + 15); }
-                        }
+                        let sY = doc.lastAutoTable.finalY + 15;
+                        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 41, 59); doc.text(`Transparansi Arus Keluar Kas Kelas:`, 40, sY);
+                        if (p.length > 0) {
+                            let dataP = []; p.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => { dataP.push([formatDateID(item.date), item.desc, formatRupiah(item.amount).replace('Rp','').trim()]); });
+                            doc.autoTable({ startY: sY + 6, head: [['Tanggal', 'Keperluan Pengeluaran Kas', 'Nominal (Rp)']], body: dataP, theme: 'plain', headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontSize: 7, cellPadding: 4 }, bodyStyles: { fontSize: 7, cellPadding: 4, textColor: [100, 116, 139] }, columnStyles: { 2: { halign: 'right', fontStyle: 'bold', textColor: [220, 38, 38] } }, margin: { left: 40, right: 40, bottom: hBawah + 10 }, willDrawCell: function(data){ if(data.section==='body'){ doc.setDrawColor(241, 245, 249); doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height); } } });
+                        } else { doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(156, 163, 175); doc.text(`Belum ada rekap pengeluaran kas dicatat oleh Wali Kelas.`, 40, sY + 15); }
                     }
 
-                    doc.save(`Laporan_Infaq_ELINA_SD_Kautsar_${kls}.pdf`); 
+                    doc.save(`Laporan_Infaq_ELINA_SDIT_Kautsar_${kls}.pdf`); 
                     Swal.close();
                 } catch (error) { 
                     console.error("PDF Export error:", error); 
@@ -1430,28 +1353,49 @@
             }, 300);
         }
 
-        // --- EXPORT PDF UNTUK ADMIN ---
+        // --- EXPORT PDF UNTUK ADMIN (PORTRAIT REKAP KELAS) ---
         function downloadAdminReport() {
             const targetClass = document.getElementById('admin-report-class').value;
             Swal.fire({
-                title: 'Merender Laporan Administrator...', html: 'Mengakses repositori lokal & memvalidasi data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading();
+                title: 'Merender Laporan Administrator...', html: 'Menggambar KOP Atas Bawah dan Menghitung Rekap...', allowOutsideClick: false, didOpen: () => { Swal.showLoading();
                 setTimeout(async () => {
                     try {
                         const { jsPDF } = window.jspdf; 
-                        const pw = 935.43; const ph = 612.28; // Landcape Super Admin Form (935x612 pt)
-                        const doc = new jsPDF('l', 'pt', [pw, ph]); 
+                        
+                        // Sesuai dengan instruksi FOTO 3: Laporan Rekap Admin dibuat tetap dalam format PORTRAIT (tegak)
+                        const pw = 612.28; // Portrait Letter Width
+                        const ph = 792.00; // Portrait Letter Height
+                        const doc = new jsPDF('p', 'pt', [pw, ph]); 
+                        
                         let classesToProcess = targetClass === 'ALL' ? [...new Set(db.users.wali.map(w => w.kelas))] : [targetClass];
                         const printDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                        const cachedKopAtas = await fetchImageToDataURL("KOP ELINA ATAS PUTIH.jpg");
+                        const cachedKopBawah = await fetchImageToDataURL("KOP ELINA BAWAH.png");
+
+                        // Hitung aspect ratio KOP secara dinamis agar pas penuh kiri-kanan (0 margin) dan tidak gepeng/lonjong
+                        const dimsAtas = await getImageDimensions(cachedKopAtas);
+                        const hAtas = pw / dimsAtas.ratio;
+                        const dimsBawah = await getImageDimensions(cachedKopBawah);
+                        const hBawah = pw / dimsBawah.ratio;
 
                         let allFridays = getFridaysFromAcademicYear();
                         let monthsData = []; 
                         let currentMonth = -1; 
                         let currentGroup = null;
+                        
+                        // Sesuai dengan FOTO 3: Menggunakan singkatan nama bulan padat agar muat sempurna di format Potret
+                        const monthMap = {
+                            '07': 'Jul', '08': 'Agt', '09': 'Sep', '10': 'Okt', '11': 'Nov', '12': 'Des',
+                            '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr', '05': 'Mei', '06': 'Jun'
+                        };
+
                         allFridays.forEach(f => {
                             if(f.getMonth() !== currentMonth) {
                                 if(currentGroup) monthsData.push(currentGroup);
                                 currentMonth = f.getMonth();
-                                currentGroup = { monthStr: formatMonthID(getLocalYYYYMMDD(f).slice(0,7)).split(' ')[0], dates: [] };
+                                const mmStr = String(f.getMonth() + 1).padStart(2, '0');
+                                currentGroup = { monthStr: monthMap[mmStr] || 'Agt', dates: [] };
                             }
                             currentGroup.dates.push(getLocalYYYYMMDD(f));
                         });
@@ -1463,10 +1407,20 @@
                             const nominal = getNominalKelas(kls);
                             const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
                             
-                            await drawOfficialKop(doc, pw, 40);
-                            await drawOfficialFooter(doc, pw, ph, 40);
+                            // Render KOP Atas penuh (0 margin)
+                            if (cachedKopAtas) {
+                                doc.addImage(cachedKopAtas, 'JPEG', 0, 0, pw, hAtas);
+                            } else {
+                                doc.setFillColor(30, 58, 138); doc.rect(0, 0, pw, 14, 'F');
+                                doc.setFillColor(249, 115, 22); doc.rect(0, 14, pw, 4, 'F');
+                            }
 
-                            let currentY = 120;
+                            // Render KOP Bawah penuh (0 margin)
+                            if (cachedKopBawah) {
+                                doc.addImage(cachedKopBawah, 'PNG', 0, ph - hBawah, pw, hBawah);
+                            }
+
+                            let currentY = hAtas + 15;
                             doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 41, 59); 
                             doc.text(`LAPORAN REKAP ADMINISTRATOR INFAQ - KELAS ${kls}`, 40, currentY);
                             doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(100, 116, 139); 
@@ -1491,24 +1445,46 @@
                                 row.push(formatRupiah(stTotal).replace('Rp','').trim()); bodyR.push(row);
                             });
 
+                            // AutoTable disesuaikan agar muat persis pada lebar potret Letter (612pt) dengan margin 40pt
                             doc.autoTable({
-                                startY: currentY, head: [['No', 'Nama Siswa', ...monthsData.map(m => m.monthStr), 'Total']], body: bodyR, theme: 'plain', 
-                                styles: { fontSize: 8, cellPadding: 5, halign: 'center', valign: 'middle' }, columnStyles: { 1: { halign: 'left', cellWidth: 120 } }, margin: { top: 110, left: 40, right: 40, bottom: 85 },
+                                startY: currentY, 
+                                head: [['No', 'Nama Siswa', ...monthsData.map(m => m.monthStr), 'Total']], 
+                                body: bodyR, 
+                                theme: 'plain', 
+                                styles: { fontSize: 7, cellPadding: 4, halign: 'center', valign: 'middle' }, 
+                                columnStyles: { 
+                                    0: { cellWidth: 20, halign: 'center' }, // No
+                                    1: { cellWidth: 110, halign: 'left' },  // Nama Siswa
+                                    2: { cellWidth: 32, halign: 'center' }, // Jul
+                                    3: { cellWidth: 32, halign: 'center' }, // Agt
+                                    4: { cellWidth: 32, halign: 'center' }, // Sep
+                                    5: { cellWidth: 32, halign: 'center' }, // Okt
+                                    6: { cellWidth: 32, halign: 'center' }, // Nov
+                                    7: { cellWidth: 32, halign: 'center' }, // Des
+                                    8: { cellWidth: 32, halign: 'center' }, // Jan
+                                    9: { cellWidth: 32, halign: 'center' }, // Feb
+                                    10: { cellWidth: 32, halign: 'center' }, // Mar
+                                    11: { cellWidth: 32, halign: 'center' }, // Apr
+                                    12: { cellWidth: 32, halign: 'center' }, // Mei
+                                    13: { cellWidth: 32, halign: 'center' }, // Jun
+                                    14: { cellWidth: 46, halign: 'right' }  // Total
+                                }, 
+                                margin: { top: 110, left: 40, right: 40, bottom: hBawah + 10 },
                                 willDrawCell: function(data) { data.cell.text = ''; },
                                 didDrawCell: function(data) {
                                     let x = data.cell.x; let y = data.cell.y; let w = data.cell.width; let h = data.cell.height; let text = data.cell.raw;
                                     if (data.section === 'head') {
-                                        doc.setFillColor(30, 58, 138); doc.roundedRect(x+1, y+1, w-2, h-2, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-                                        if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 3); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
+                                        doc.setFillColor(30, 58, 138); doc.roundedRect(x+1, y+1, w-2, h-2, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
+                                        if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 2.5); else doc.text(text, x + w/2, y + h/2 + 2.5, {align: 'center'});
                                     } else if (data.section === 'body') {
                                         if (data.column.index === 0 || data.column.index === 1) {
                                             doc.setTextColor(51, 65, 85); doc.setFont('helvetica', data.column.index===1 ? 'bold' : 'normal');
-                                            if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 3, {maxWidth: 110}); else doc.text(text, x + w/2, y + h/2 + 3, {align: 'center'});
+                                            if(data.column.index === 1) doc.text(text, x + 5, y + h/2 + 2.5, {maxWidth: 100}); else doc.text(text, x + w/2, y + h/2 + 2.5, {align: 'center'});
                                         } else if (data.column.index >= 2 && data.column.index <= 13) {
-                                            let val = parseInt(text); let px = x + 2; let py = y + 2; let pw = w - 4; let ph = h - 4;
-                                            if (val > 0) { doc.setFillColor(34, 197, 94); doc.roundedRect(px, py, pw, ph, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(7); doc.text(formatRupiah(val).replace('Rp','').trim(), x + w/2, y + h/2 + 2, {align: 'center'}); } 
-                                            else { doc.setFillColor(241, 245, 249); doc.roundedRect(px, py, pw, ph, 3, 3, 'F'); doc.setTextColor(148, 163, 184); doc.setFontSize(7); doc.text("0", x + w/2, y + h/2 + 2, {align: 'center'}); }
-                                        } else if (data.column.index === 14) { doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 5, y + h/2 + 3, {align: 'right'}); }
+                                            let val = parseInt(text); let px = x + 1.5; let py = y + 1.5; let pwCell = w - 3; let phCell = h - 3;
+                                            if (val > 0) { doc.setFillColor(34, 197, 94); doc.roundedRect(px, py, pwCell, phCell, 3, 3, 'F'); doc.setTextColor(255); doc.setFontSize(6.5); doc.text(formatRupiah(val).replace('Rp','').trim(), x + w/2, y + h/2 + 2, {align: 'center'}); } 
+                                            else { doc.setFillColor(241, 245, 249); doc.roundedRect(px, py, pwCell, phCell, 3, 3, 'F'); doc.setTextColor(148, 163, 184); doc.setFontSize(6.5); doc.text("0", x + w/2, y + h/2 + 2, {align: 'center'}); }
+                                        } else if (data.column.index === 14) { doc.setTextColor(30, 58, 138); doc.setFont('helvetica', 'bold'); doc.text(text, x + w - 4, y + h/2 + 2.5, {align: 'right'}); }
                                         doc.setDrawColor(241, 245, 249); doc.line(x, y + h, x + w, y + h);
                                     }
                                 }
@@ -1534,10 +1510,10 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(adminData), "ADMIN_CONFIG"); 
             
             const waliData = db.users.wali.map(w => ({ Kelas: w.kelas, Nama_Wali: w.nama, PIN_Login_Wali: w.kode, Nominal_Infaq_Default: getNominalKelas(w.kelas) })); 
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(waliData.length > 0 ? waliData : [{Kelas:'6A', Nama_Wali:'Guru Contoh, S.Pd.', PIN_Login_Wali:'123', Nominal_Infaq_Default:5000}]), "WALI_KELAS_CONFIG"); 
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(waliData.length > 0 ? waliData : [{Kelas:'4D', Nama_Wali:'Guru Contoh, S.Pd.', PIN_Login_Wali:'123', Nominal_Infaq_Default:5000}]), "WALI_KELAS_CONFIG"); 
             
             const muridData = db.users.murid.map(m => ({ Kelas: m.kelas, No_Presensi: m.presensi, Nama_Siswa: m.nama, Kode_PIN_Siswa: m.kode })); 
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(muridData.length > 0 ? muridData : [{Kelas:'6A', No_Presensi:'01', Nama_Siswa:'Siswa Contoh A', Kode_PIN_Siswa:'111'}]), "WALI_MURID_CONFIG"); 
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(muridData.length > 0 ? muridData : [{Kelas:'4D', No_Presensi:'01', Nama_Siswa:'Siswa Contoh A', Kode_PIN_Siswa:'111'}]), "WALI_MURID_CONFIG"); 
             
             XLSX.writeFile(wb, "ELINA_Database_Format_Sekolah.xlsx");
         }
@@ -1768,7 +1744,7 @@
                 html: `<div class="flex flex-col gap-2 text-left mt-2">
                         <input type="text" id="add-s-presensi" class="w-full p-2.5 border border-gray-200 rounded-lg text-xs" placeholder="No Presensi (Contoh: 03)">
                         <input type="text" id="add-s-nama" class="w-full p-2.5 border border-gray-200 rounded-lg text-xs" placeholder="Nama Lengkap Siswa">
-                        <input type="text" id="add-s-kode" class="w-full p-2.5 border border-gray-200 rounded-lg text-xs font-mono font-bold text-orange-600 bg-orange-50/20 border-orange-200" placeholder="PIN Wali Murid (Contoh: 555)">
+                        <input type="text" id="add-s-kode" class="w-full p-2.5 border border-gray-200 rounded-lg text-xs font-mono font-bold text-orange-600 bg-orange-50/20 border-orange-200" placeholder="PIN Wali Mudrid (Contoh: 555)">
                        </div>`, 
                 showCancelButton: true, confirmButtonText: 'Daftarkan Siswa', cancelButtonText: 'Batal', 
                 customClass: { popup: 'rounded-3xl w-[85%] p-4 bg-slate-50', confirmButton: 'btn-click bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold', cancelButton: 'btn-click bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, 

@@ -195,11 +195,12 @@
                 <button onclick="logout()" class="btn-click bg-red-50 text-red-600 w-9 h-9 rounded-xl flex items-center justify-center border border-red-100"><i class="fas fa-power-off text-sm"></i></button>
             </div>
 
-            <div class="grid grid-cols-4 gap-2 mb-4">
+            <div class="grid grid-cols-5 gap-2 mb-4">
                 <button onclick="downloadFormatExcel()" class="btn-click bg-white border border-gray-100 shadow-sm rounded-2xl p-2 flex flex-col items-center justify-center gap-1"><i class="fas fa-file-excel text-green-500 text-lg"></i><span class="text-[8px] font-bold text-gray-600">Format</span></button>
                 <label class="btn-click bg-white border border-gray-100 shadow-sm rounded-2xl p-2 flex flex-col items-center justify-center gap-1 cursor-pointer"><i class="fas fa-cloud-upload-alt text-blue-500 text-lg"></i><span class="text-[8px] font-bold text-gray-600">Upload</span><input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="uploadExcel(event)"></label>
                 <button onclick="openSetNominalModal()" class="btn-click bg-white border border-gray-100 shadow-sm rounded-2xl p-2 flex flex-col items-center justify-center gap-1"><i class="fas fa-coins text-orange-500 text-lg"></i><span class="text-[8px] font-bold text-gray-600">Nominal</span></button>
                 <button onclick="openEditAccountModal()" class="btn-click bg-white border border-gray-100 shadow-sm rounded-2xl p-2 flex flex-col items-center justify-center gap-1"><i class="fas fa-users-cog text-purple-500 text-lg"></i><span class="text-[8px] font-bold text-gray-600">Akun</span></button>
+                <button onclick="resetDatabase()" class="btn-click bg-red-50 border border-red-100 shadow-sm rounded-2xl p-2 flex flex-col items-center justify-center gap-1"><i class="fas fa-trash-alt text-red-500 text-lg"></i><span class="text-[8px] font-bold text-red-600">Reset Total</span></button>
             </div>
 
             <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm mb-4 flex flex-col gap-3">
@@ -659,7 +660,15 @@
             viewSel.innerHTML = (classes.length > 0) ? opts : '<option value="">Kosong</option>'; reportSel.innerHTML = '<option value="ALL">Semua Kelas</option>' + opts;
             const imgAdmin = document.getElementById('admin-foto-profil');
             if (db.users.admin[0]?.foto && db.users.admin[0].foto.trim() !== '') { imgAdmin.src = db.users.admin[0].foto; } else { imgAdmin.src = `https://ui-avatars.com/api/?name=Admin&background=3B82F6&color=fff&bold=true`; }
-            if (classes.length > 0) renderAdminClassView();
+            
+            if (classes.length > 0) {
+                renderAdminClassView();
+            } else {
+                document.getElementById('admin-tot-masuk').textContent = 'Rp 0';
+                document.getElementById('admin-tot-keluar').textContent = 'Rp 0';
+                document.getElementById('admin-tot-saldo').textContent = 'Rp 0';
+                document.getElementById('admin-table').innerHTML = '<tr><td class="text-center p-5 text-gray-400 text-[10px] font-medium">Database kosong. Silakan upload file Excel terbaru.</td></tr>';
+            }
         }
 
         function renderAdminClassView() {
@@ -952,6 +961,33 @@
         // =========================================================================
         // PENGATURAN ADMIN (Format, Nominal, Akun)
         // =========================================================================
+        
+        // FUNGSI RESET DATABASE TOTAL (ADMIN)
+        function resetDatabase() {
+            Swal.fire({
+                title: 'Reset Total Database?',
+                html: 'Semua data <b>Siswa, Wali Kelas, Checklist Infaq, Nominal</b> dan <b>Pengeluaran</b> akan dihapus permanen!<br><br><span class="text-red-500 font-bold">Hanya akun Admin yang tersisa.</span> Anda harus mengunggah file Excel baru setelah ini.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'Ya, Bersihkan Total!',
+                cancelButtonText: 'Batal',
+                customClass: {popup: 'rounded-2xl w-[85%] max-w-sm p-4'}
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    db.users.wali = [];
+                    db.users.murid = [];
+                    db.config.defaultNominal = {};
+                    db.infaq = {};
+                    db.pengeluaran = {};
+                    saveDB();
+                    setupAdminView();
+                    Swal.fire({icon: 'success', title: 'Database Bersih!', text: 'Silakan upload data Excel terbaru.', showConfirmButton: false, timer: 2000, customClass: {popup: 'rounded-2xl w-[75%]'}});
+                }
+            });
+        }
+
         function openSetNominalModal() {
             let html = '<div class="space-y-2 text-left mt-2 max-h-64 overflow-y-auto pr-2">'; const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort();
             classes.forEach(c => { html += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm"><span class="font-bold text-gray-700 text-xs">Kelas ${c}</span><div class="flex items-center"><span class="text-[10px] text-gray-400 font-bold mr-1">Rp</span><input type="number" id="nom-${c}" value="${getNominalKelas(c)}" class="border border-gray-200 rounded p-1.5 w-20 text-right font-mono font-bold text-orange-600 outline-none bg-orange-50/50 text-[10px]"></div></div>`; }); html += '</div>';

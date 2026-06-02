@@ -652,6 +652,34 @@
             Swal.fire({ title: '<span class="text-sm font-black">Riwayat Pengeluaran</span>', html: html, showConfirmButton: false, showCloseButton: true, customClass: {popup: 'rounded-2xl w-[90%] max-w-sm p-4'} });
         }
 
+        // --- ADMIN VIEW LOGIC ---
+        function setupAdminView() {
+            const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort(); const viewSel = document.getElementById('admin-view-class'); const reportSel = document.getElementById('admin-report-class');
+            let opts = classes.map(c => `<option value="${c}">Kelas ${c}</option>`).join('');
+            viewSel.innerHTML = (classes.length > 0) ? opts : '<option value="">Kosong</option>'; reportSel.innerHTML = '<option value="ALL">Semua Kelas</option>' + opts;
+            const imgAdmin = document.getElementById('admin-foto-profil');
+            if (db.users.admin[0]?.foto && db.users.admin[0].foto.trim() !== '') { imgAdmin.src = db.users.admin[0].foto; } else { imgAdmin.src = `https://ui-avatars.com/api/?name=Admin&background=3B82F6&color=fff&bold=true`; }
+            if (classes.length > 0) renderAdminClassView();
+        }
+
+        function renderAdminClassView() {
+            const kls = document.getElementById('admin-view-class').value; if (!kls) return;
+            const nominal = getNominalKelas(kls); const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            let totalMasuk = 0, tbody = '';
+            
+            if (students.length === 0) { tbody = `<tr><td colspan="4" class="text-center p-5 text-gray-400 text-[10px] font-medium">Belum ada data siswa.</td></tr>`; } 
+            else {
+                students.forEach(s => {
+                    let stTot = 0; if (db.infaq[kls]) { Object.keys(db.infaq[kls]).forEach(d => { if (db.infaq[kls][d][s.presensi] === 'paid') { stTot += nominal; totalMasuk += nominal; } }); }
+                    tbody += `<tr class="border-b border-gray-100 hover:bg-slate-50 transition"><td class="p-2 text-center text-gray-500">${s.presensi}</td><td class="p-2 font-bold text-gray-800">${s.nama}</td><td class="p-2 font-mono text-gray-400 text-[10px]">${s.kode}</td><td class="p-2 text-right font-black text-blue-600 bg-blue-50/30">${formatRupiah(stTot)}</td></tr>`;
+                });
+            }
+            
+            const p = db.pengeluaran[kls] || []; const totalKeluar = p.reduce((sum, i) => sum + i.amount, 0); // BUG FIXED HERE: 'sum' instead of 's'
+            document.getElementById('admin-tot-masuk').textContent = formatRupiah(totalMasuk); document.getElementById('admin-tot-keluar').textContent = formatRupiah(totalKeluar); document.getElementById('admin-tot-saldo').textContent = formatRupiah(totalMasuk - totalKeluar);
+            document.getElementById('admin-table').innerHTML = `<thead class="bg-slate-50 text-[9px] text-gray-500 uppercase tracking-wide border-b border-gray-200"><tr><th class="p-2 text-center w-10">No</th><th class="p-2">Nama Lengkap</th><th class="p-2">Kode Unik</th><th class="p-2 text-right">Total Infaq</th></tr></thead><tbody>${tbody}</tbody>`;
+        }
+
         // =========================================================================
         // PDF GENERATOR (Wali & Admin)
         // =========================================================================
@@ -919,6 +947,74 @@
                     } catch (error) { console.error("PDF Error:", error); Swal.fire({icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat membuat PDF.'}); }
                 }, 200); }
             });
+        }
+
+        // =========================================================================
+        // PENGATURAN ADMIN (Format, Nominal, Akun)
+        // =========================================================================
+        function openSetNominalModal() {
+            let html = '<div class="space-y-2 text-left mt-2 max-h-64 overflow-y-auto pr-2">'; const classes = [...new Set(db.users.wali.map(w => w.kelas))].sort();
+            classes.forEach(c => { html += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm"><span class="font-bold text-gray-700 text-xs">Kelas ${c}</span><div class="flex items-center"><span class="text-[10px] text-gray-400 font-bold mr-1">Rp</span><input type="number" id="nom-${c}" value="${getNominalKelas(c)}" class="border border-gray-200 rounded p-1.5 w-20 text-right font-mono font-bold text-orange-600 outline-none bg-orange-50/50 text-[10px]"></div></div>`; }); html += '</div>';
+            Swal.fire({ title: '<span class="text-sm font-black">Set Nominal Default</span>', html: html, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', customClass: { popup: 'rounded-3xl w-[85%] max-w-sm p-4', confirmButton: 'btn-click bg-orange-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md', cancelButton: 'btn-click bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, buttonsStyling: false, preConfirm: () => { let res = {}; classes.forEach(c => { res[c] = parseInt(document.getElementById(`nom-${c}`).value) || 0; }); return res; } }).then(result => { if (result.isConfirmed) { db.config.defaultNominal = result.value; saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-3xl w-[70%]'}}); } });
+        }
+
+        window.updateEditUserList = () => {
+            const role = document.getElementById('edit-role').value; const sel = document.getElementById('edit-user-select'); const fields = document.getElementById('edit-fields');
+            sel.classList.add('hidden'); fields.classList.add('hidden'); if (!role) return;
+            let opts = '<option value="">-- Pilih Akun --</option>';
+            if (role === 'admin') { db.users.admin.forEach((a, i) => opts += `<option value="${i}">${a.username}</option>`); } else if (role === 'wali') { db.users.wali.forEach((w, i) => opts += `<option value="${i}">Kelas ${w.kelas} - ${w.nama}</option>`); } else if (role === 'murid') { db.users.murid.forEach((m, i) => opts += `<option value="${i}">Kelas ${m.kelas} - ${m.presensi} - ${m.nama}</option>`); }
+            sel.innerHTML = opts; sel.classList.remove('hidden');
+        }
+
+        window.updateEditFields = () => {
+            const role = document.getElementById('edit-role').value; const idx = document.getElementById('edit-user-select').value; const fields = document.getElementById('edit-fields');
+            if (idx === '') { fields.classList.add('hidden'); return; } fields.classList.remove('hidden');
+            const elKelas = document.getElementById('edit-kelas'); const elId = document.getElementById('edit-id'); const elNama = document.getElementById('edit-nama'); const elPass = document.getElementById('edit-pass'); const elFoto = document.getElementById('edit-foto'); const btnDelete = document.getElementById('btn-delete-account');
+
+            elFoto.style.display = 'block'; if (role === 'admin' && db.users.admin.length <= 1) { btnDelete.classList.add('hidden'); } else { btnDelete.classList.remove('hidden'); }
+
+            if (role === 'admin') { elKelas.style.display = 'none'; elNama.style.display = 'none'; elId.style.display = 'block'; elId.placeholder = "Username"; elId.value = db.users.admin[idx].username; elPass.value = db.users.admin[idx].kode; elFoto.value = db.users.admin[idx].foto || ""; } else if (role === 'wali') { const u = db.users.wali[idx]; elKelas.style.display = 'block'; elNama.style.display = 'block'; elId.style.display = 'none'; elKelas.value = u.kelas; elNama.value = u.nama; elPass.value = u.kode; elFoto.value = u.foto || ""; } else if (role === 'murid') { const u = db.users.murid[idx]; elKelas.style.display = 'block'; elNama.style.display = 'block'; elId.style.display = 'block'; elId.placeholder = "No Presensi"; elKelas.value = u.kelas; elId.value = u.presensi; elNama.value = u.nama; elPass.value = u.kode; elFoto.value = u.foto || ""; }
+        }
+
+        window.deleteSelectedAccount = () => {
+            const role = document.getElementById('edit-role').value; const idx = document.getElementById('edit-user-select').value; if(!role || idx === '') return;
+            Swal.fire({ title: 'Hapus Akun?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Hapus', cancelButtonText: 'Batal', customClass: {popup: 'rounded-3xl w-[85%] max-w-sm p-4'} }).then((result) => { if (result.isConfirmed) { if (role === 'admin') db.users.admin.splice(idx, 1); else if (role === 'wali') db.users.wali.splice(idx, 1); else if (role === 'murid') db.users.murid.splice(idx, 1); saveDB(); setupAdminView(); Swal.fire({icon: 'success', title: 'Terhapus!', showConfirmButton: false, timer: 1000, customClass: {popup: 'rounded-3xl w-[70%]'}}); } });
+        }
+
+        function openEditAccountModal() {
+            Swal.fire({ title: '<span class="text-sm font-black">Manajemen Akun</span>', html: `<div class="flex flex-col gap-2 mt-2 text-left"><select id="edit-role" onchange="window.updateEditUserList()" class="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none bg-white"><option value="">-- Level --</option><option value="wali">Wali Kelas</option><option value="murid">Wali Murid</option><option value="admin">Admin</option></select><select id="edit-user-select" onchange="window.updateEditFields()" class="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none bg-white hidden"></select><div id="edit-fields" class="flex-col gap-2 hidden border-t border-gray-100 pt-2"><input type="text" id="edit-kelas" class="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Kelas"><input type="text" id="edit-id" class="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Presensi / Username"><input type="text" id="edit-nama" class="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Nama"><input type="url" id="edit-foto" class="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Link Foto"><input type="text" id="edit-pass" class="w-full p-2 border border-orange-200 rounded-lg text-xs font-mono font-bold text-orange-600 bg-orange-50/50" placeholder="KODE"><button type="button" id="btn-delete-account" onclick="window.deleteSelectedAccount()" class="w-full text-red-500 border border-red-200 py-1.5 rounded-lg text-[10px] font-bold mt-1"><i class="fas fa-trash-alt mr-1"></i> HAPUS</button></div></div>`, showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Tutup', customClass: { popup: 'rounded-3xl w-[85%] max-w-md p-4 bg-slate-50', confirmButton: 'btn-click bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md', cancelButton: 'btn-click bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, buttonsStyling: false, preConfirm: () => { const role = document.getElementById('edit-role').value; const idx = document.getElementById('edit-user-select').value; if (!role || idx === '') return false; return { role, idx, kelas: document.getElementById('edit-kelas').value, id: document.getElementById('edit-id').value, nama: document.getElementById('edit-nama').value, pass: document.getElementById('edit-pass').value, foto: document.getElementById('edit-foto').value } } }).then(res => { if (res.isConfirmed && res.value) { const data = res.value; if (!data.pass) return; if (data.role === 'admin') { db.users.admin[data.idx].username = data.id; db.users.admin[data.idx].kode = data.pass; db.users.admin[data.idx].foto = data.foto; } else if (data.role === 'wali') { db.users.wali[data.idx].kelas = data.kelas; db.users.wali[data.idx].nama = data.nama; db.users.wali[data.idx].kode = data.pass; db.users.wali[data.idx].foto = data.foto; } else if (data.role === 'murid') { db.users.murid[data.idx].kelas = data.kelas; db.users.murid[data.idx].presensi = data.id; db.users.murid[data.idx].nama = data.nama; db.users.murid[data.idx].kode = data.pass; db.users.murid[data.idx].foto = data.foto; } saveDB(); setupAdminView(); Swal.fire({icon:'success', title:'Tersimpan', showConfirmButton:false, timer:1500, customClass:{popup:'rounded-3xl w-[70%]'}}); } });
+        }
+
+        function openAddStudentModal() {
+            const kls = document.getElementById('admin-view-class').value; if (!kls) return Swal.fire({icon:'warning', title:'Pilih Kelas', customClass: {popup: 'rounded-3xl w-[70%]'}});
+            Swal.fire({ title: `<span class="text-sm font-black">Tambah Siswa ${kls}</span>`, html: `<div class="flex flex-col gap-2 text-left mt-2"><input type="text" id="add-s-presensi" class="w-full p-2 border border-gray-200 rounded-lg text-xs" placeholder="No Presensi"><input type="text" id="add-s-nama" class="w-full p-2 border border-gray-200 rounded-lg text-xs" placeholder="Nama Lengkap"><input type="text" id="add-s-kode" class="w-full p-2 border border-gray-200 rounded-lg text-xs font-mono" placeholder="Kode Login"></div>`, showCancelButton: true, confirmButtonText: 'Tambah', cancelButtonText: 'Batal', customClass: { popup: 'rounded-3xl w-[85%] p-4', confirmButton: 'btn-click bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold', cancelButton: 'btn-click bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold' }, buttonsStyling: false, preConfirm: () => { return { presensi: document.getElementById('add-s-presensi').value, nama: document.getElementById('add-s-nama').value, kode: document.getElementById('add-s-kode').value } } }).then(res => { if (res.isConfirmed) { const data = res.value; if (!data.presensi || !data.nama || !data.kode) return; if (db.users.murid.find(m => m.kelas === kls && m.presensi === data.presensi)) return Swal.fire({icon:'error', title:'Presensi ada', customClass:{popup:'rounded-3xl'}}); db.users.murid.push({ kelas: kls, presensi: data.presensi, nama: data.nama, kode: data.kode, foto: "" }); saveDB(); renderAdminClassView(); Swal.fire({icon:'success', title:'Berhasil', showConfirmButton:false, timer:1000, customClass:{popup:'rounded-3xl w-[70%]'}}); } });
+        }
+
+        function downloadFormatExcel() {
+            const wb = XLSX.utils.book_new(); const adminData = db.users.admin.map(a => ({ Username: a.username, Kode: a.kode, Link_Foto: a.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(adminData), "ADMIN"); const waliData = db.users.wali.map(w => ({ Kelas: w.kelas, Nama_Wali: w.nama, Kode_Login: w.kode, Nominal_Default: getNominalKelas(w.kelas), Link_Foto: w.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(waliData.length > 0 ? waliData : [{Kelas:'6A', Nama_Wali:'Guru Contoh', Kode_Login:'123', Nominal_Default:5000, Link_Foto: ""}]), "WALI_KELAS"); const muridData = db.users.murid.map(m => ({ Kelas: m.kelas, Presensi: m.presensi, Nama_Siswa: m.nama, Kode_Login: m.kode, Link_Foto: m.foto || "" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(muridData.length > 0 ? muridData : [{Kelas:'6A', Presensi:'01', Nama_Siswa:'Siswa A', Kode_Login:'01', Link_Foto: ""}]), "WALI_MURID"); XLSX.writeFile(wb, "Format_Data_ELINA.xlsx");
+        }
+
+        async function uploadExcel(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); 
+            reader.onload = async (evt) => { 
+                try { 
+                    const data = evt.target.result; const wb = XLSX.read(data, {type: 'binary'}); 
+                    if (wb.Sheets["ADMIN"]) { const adminJson = XLSX.utils.sheet_to_json(wb.Sheets["ADMIN"]); if (adminJson.length > 0 && adminJson[0].Username) db.users.admin = adminJson.map(a => ({ username: a.Username, kode: a.Kode.toString(), foto: a.Link_Foto || "" })); } 
+                    if (wb.Sheets["WALI_KELAS"]) { db.users.wali = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_KELAS"]).forEach(w => { const kls = w.Kelas.toString(); db.users.wali.push({ kelas: kls, nama: w.Nama_Wali, kode: w.Kode_Login.toString(), foto: w.Link_Foto || "" }); db.config.defaultNominal[kls] = parseInt(w.Nominal_Default) || 2000; }); } 
+                    if (wb.Sheets["WALI_MURID"]) { db.users.murid = []; XLSX.utils.sheet_to_json(wb.Sheets["WALI_MURID"]).forEach(m => { let p = m.Presensi.toString(); if (p.length === 1) p = '0'+p; db.users.murid.push({ kelas: m.Kelas.toString(), presensi: p, nama: m.Nama_Siswa, kode: m.Kode_Login.toString(), foto: m.Link_Foto || "" }); }); } 
+                    
+                    // MEMAKSA SINKRONISASI CLOUD SETELAH UPLOAD EXCEL LOKAL
+                    Swal.fire({ title: 'Sinkronisasi Cloud...', html: 'Mengupdate database dan membuat Sheet Spreadsheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    await saveDB(); 
+                    
+                    setupAdminView(); 
+                    Swal.fire({icon:'success', title:'Data Terupdate!', text: 'Spreadsheet berhasil disinkronkan.', customClass:{popup:'rounded-3xl w-[80%]'}}); 
+                } catch (error) { 
+                    Swal.fire({icon:'error', title:'Format Salah', text: 'Pastikan file sesuai dengan template.', customClass:{popup:'rounded-3xl w-[70%]'}}); 
+                } 
+                e.target.value = ''; 
+            }; 
+            reader.readAsBinaryString(file);
         }
     </script>
 </body>

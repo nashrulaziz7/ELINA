@@ -807,11 +807,12 @@
         function openWaliReportMenu() {
             const kls = session.user.kelas;
             const students = db.users.murid.filter(m => m.kelas === kls).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            
             if (students.length === 0) return Swal.fire({icon: 'warning', title: 'Kelas Kosong', customClass:{popup:'rounded-3xl w-[70%]'}});
 
             let checkboxes = `
                 <label class="flex items-center justify-between p-3 border border-blue-200 bg-blue-50/50 rounded-xl cursor-pointer mb-2 transition">
-                    <span class="text-xs font-black text-blue-700">Pilih Semua Siswa</span>
+                    <span class="text-xs font-black text-blue-700">Semua Siswa (Cetak Lengkap)</span>
                     <input type="checkbox" id="cb-all-students" class="cb-custom" onchange="toggleAllStudents(this)">
                 </label>
                 <div class="max-h-[40vh] overflow-y-auto bg-white rounded-xl border border-gray-100 hide-scroll space-y-1 p-1">
@@ -825,12 +826,25 @@
             });
             checkboxes += `</div>`;
 
-            window.toggleAllStudents = (el) => { const cbs = document.querySelectorAll('.stu-cb'); cbs.forEach(cb => cb.checked = el.checked); };
-            window.checkIndividualStudent = () => { const allCb = document.getElementById('cb-all-students'); const cbs = document.querySelectorAll('.stu-cb'); allCb.checked = Array.from(cbs).every(c => c.checked); };
+            // Setup Event Listener internal SweetAlert
+            window.toggleAllStudents = (el) => {
+                const cbs = document.querySelectorAll('.stu-cb');
+                cbs.forEach(cb => cb.checked = el.checked);
+            };
+            window.checkIndividualStudent = () => {
+                const allCb = document.getElementById('cb-all-students');
+                const cbs = document.querySelectorAll('.stu-cb');
+                allCb.checked = Array.from(cbs).every(c => c.checked);
+            };
 
             Swal.fire({
                 title: '<span class="text-sm font-black">Pengaturan Laporan</span>',
-                html: `<div class="text-left mt-2 space-y-3"><p class="text-[9px] font-medium text-gray-500 leading-tight">* Laporan otomatis memuat 1 Tahun Ajaran Penuh.</p>${checkboxes}</div>`,
+                html: `
+                    <div class="text-left mt-2 space-y-3">
+                        <p class="text-[9px] font-medium text-gray-500 leading-tight">* Laporan otomatis memuat 1 Tahun Ajaran Penuh.</p>
+                        ${checkboxes}
+                    </div>
+                `,
                 showCancelButton: true, confirmButtonText: 'Mulai Unduh <i class="fas fa-download ml-1"></i>', cancelButtonText: 'Batal',
                 customClass: { popup: 'rounded-3xl w-[95%] max-w-sm p-4 bg-slate-50', confirmButton: 'btn-click bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md w-full mb-2', cancelButton: 'btn-click bg-white border border-gray-200 text-gray-600 px-5 py-2.5 rounded-xl text-xs font-bold w-full', actions: 'flex flex-col w-full' }, buttonsStyling: false,
                 preConfirm: () => {
@@ -838,24 +852,30 @@
                     if(selected.length === 0) { Swal.showValidationMessage("Pilih minimal 1 siswa"); return false; }
                     return selected;
                 }
-            }).then((result) => { if (result.isConfirmed) { generateWaliPDF(result.value); } });
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    generateWaliPDF(result.value);
+                }
+            });
         }
 
-        async function getBase64ImageOptimized(imageUrl) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                if (imageUrl.startsWith('http')) img.crossOrigin = "Anonymous";
-                img.onload = () => {
-                    try {
-                        const canvas = document.createElement("canvas"); canvas.width = img.width; canvas.height = img.height;
-                        const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0);
-                        resolve(canvas.toDataURL("image/jpeg", 0.8));
-                    } catch (e) { resolve(null); }
-                };
-                img.onerror = () => resolve(null);
-                if (imageUrl.startsWith('http')) img.src = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'cb=' + new Date().getTime();
-                else img.src = imageUrl;
-            });
+        // TEKNIK BARU: Menggunakan Fetch Blob -> FileReader untuk menghindari blokade CORS Canvas di GitHub Pages
+        async function getBase64ImageOptimized(url, format) {
+            try {
+                const response = await fetch(url, { cache: "no-store" });
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                console.warn("Gagal memuat gambar (CORS/Network):", url);
+                return null; // Kembalikan null agar PDF tetap terbuat meski tanpa KOP
+            }
         }
 
         async function generateWaliPDF(selectedStudentsArr) {

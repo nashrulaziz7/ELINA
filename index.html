@@ -710,7 +710,7 @@
                 if (match) { loggedInRole = 'wali'; loggedInUser = match; }
             } else if (currentLoginTab === 'murid') {
                 const kls = cleanClass(document.getElementById('murid-kelas').value); 
-                const pres = cleanPresensi(document.getElementById('murid-nama').value); 
+                const pres = cleanPresensi(document.getElementById('murid-nama').value); // ⚠️ PERBAIKAN DI SINI: PASTIKAN NO PRESENSI DIBERSIHKAN (DITAMBAH NOL JIKA PERLU)
                 const match = db.users.murid.find(m => cleanClass(m.kelas) === kls && cleanPresensi(m.presensi) === pres && cleanName(m.kode) === kode);
                 if (match) { loggedInRole = 'murid'; loggedInUser = match; }
             }

@@ -33,6 +33,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
+        // INJEKSI PWA MANIFEST AGAR TOMBOL INSTALL ASLI MUNCUL DI HP
+        const manifestStr = JSON.stringify({
+            name: "ELINA E-Infaq Al Kautsar",
+            short_name: "ELINA",
+            start_url: window.location.href.split('?')[0],
+            display: "standalone",
+            background_color: "#f8fafc",
+            theme_color: "#1E3A8A",
+            icons: [
+                { src: "ELINA.png", sizes: "192x192", type: "image/png" },
+                { src: "ELINA.png", sizes: "512x512", type: "image/png" }
+            ]
+        });
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(manifestStr);
+        document.head.appendChild(manifestLink);
+
         window.tailwind = window.tailwind || {};
         window.tailwind.config = {
             theme: {
@@ -837,9 +855,9 @@
         }
 
         function renderWaliChecklist() {
-            const kelas = session.user.kelas; 
+            const kelas = String(session.user.kelas).trim(); 
             const nominal = getNominalKelas(kelas);
-            const students = db.users.murid.filter(m => m.kelas === kelas).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
+            const students = db.users.murid.filter(m => String(m.kelas).trim() === kelas).sort((a,b) => String(a.presensi).localeCompare(String(b.presensi), undefined, {numeric: true}));
             if (!db.infaq[kelas]) db.infaq[kelas] = {};
 
             // Dynamic visibility of "Batal Reset" button based on backup existence
@@ -929,7 +947,7 @@
         }
 
         function toggleGlobalLunas(kelas, dateStr, isCurrentlyAllLunas) {
-            const students = db.users.murid.filter(m => m.kelas === kelas);
+            const students = db.users.murid.filter(m => String(m.kelas).trim() === String(kelas).trim());
             if (isCurrentlyAllLunas) { 
                 students.forEach(s => { if (db.infaq[kelas][dateStr][s.presensi] === 'paid') delete db.infaq[kelas][dateStr][s.presensi]; }); 
             } else { 
@@ -939,7 +957,7 @@
         }
 
         function toggleGlobalLibur(kelas, dateStr, isCurrentlyLibur) {
-            const students = db.users.murid.filter(m => m.kelas === kelas);
+            const students = db.users.murid.filter(m => String(m.kelas).trim() === String(kelas).trim());
             if (isCurrentlyLibur) { 
                 students.forEach(s => { if (db.infaq[kelas][dateStr][s.presensi] === 'libur') delete db.infaq[kelas][dateStr][s.presensi]; }); 
             } else { 
@@ -1706,22 +1724,22 @@
                     
                     if (wb.Sheets["ADMIN_CONFIG"]) { 
                         const adminJson = XLSX.utils.sheet_to_json(wb.Sheets["ADMIN_CONFIG"]); 
-                        if (adminJson.length > 0 && adminJson[0].Username) db.users.admin = adminJson.map(a => ({ username: a.Username, kode: a.Password_Kunci.toString() })); 
+                        if (adminJson.length > 0 && adminJson[0].Username) db.users.admin = adminJson.map(a => ({ username: a.Username.toString().trim(), kode: a.Password_Kunci.toString().trim() })); 
                     } 
                     if (wb.Sheets["WALI_KELAS_CONFIG"]) { 
                         db.users.wali = []; 
                         XLSX.utils.sheet_to_json(wb.Sheets["WALI_KELAS_CONFIG"]).forEach(w => { 
-                            const kls = w.Kelas ? w.Kelas.toString() : "-"; 
-                            db.users.wali.push({ kelas: kls, nama: toProperCase(w.Nama_Wali || "Wali Kelas Contoh"), kode: w.PIN_Login_Wali ? w.PIN_Login_Wali.toString() : "123" }); 
+                            const kls = w.Kelas ? w.Kelas.toString().trim() : "-"; 
+                            db.users.wali.push({ kelas: kls, nama: toProperCase(w.Nama_Wali || "Wali Kelas Contoh").trim(), kode: w.PIN_Login_Wali ? w.PIN_Login_Wali.toString().trim() : "123" }); 
                             db.config.defaultNominal[kls] = parseInt(w.Nominal_Infaq_Default) || 2000; 
                         }); 
                     } 
                     if (wb.Sheets["WALI_MURID_CONFIG"]) { 
                         db.users.murid = []; 
                         XLSX.utils.sheet_to_json(wb.Sheets["WALI_MURID_CONFIG"]).forEach(m => { 
-                            let p = m.No_Presensi ? m.No_Presensi.toString() : "00"; 
+                            let p = m.No_Presensi ? m.No_Presensi.toString().trim() : "00"; 
                             if (p.length === 1) p = '0'+p; 
-                            db.users.murid.push({ kelas: m.Kelas ? m.Kelas.toString() : "-", presensi: p, nama: toProperCase(m.Nama_Siswa || "Siswa Tanpa Nama"), kode: m.Kode_PIN_Siswa ? m.Kode_PIN_Siswa.toString() : "123" }); 
+                            db.users.murid.push({ kelas: m.Kelas ? m.Kelas.toString().trim() : "-", presensi: p, nama: toProperCase(m.Nama_Siswa || "Siswa Tanpa Nama").trim(), kode: m.Kode_PIN_Siswa ? m.Kode_PIN_Siswa.toString().trim() : "123" }); 
                         }); 
                     } 
                     

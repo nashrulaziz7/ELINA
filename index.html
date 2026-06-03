@@ -422,56 +422,64 @@
             clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB";
         }
 
-        // TEKNIK MEMBACA DATA 100% BYPASS CORS MENGGUNAKAN JSONP
-        async function loadCloudDB() {
-            if (SCRIPT_URL && SCRIPT_URL.includes("script.google.com")) {
+        // FUNGSI MEMBACA DATA 100% ANTI BLOKIR HP (MENGGUNAKAN JSONP)
+        function loadCloudDB() {
+            return new Promise((resolve) => {
+                // Pastikan URL valid
+                if (!SCRIPT_URL || !SCRIPT_URL.includes("script.google.com")) {
+                    loadLocalFallback();
+                    resolve();
+                    return;
+                }
+
                 Swal.fire({ 
                     title: 'Menyinkronkan Data...', 
                     html: 'Membaca basis data SDIT Muhammadiyah Al Kautsar...',
                     allowOutsideClick: false, 
                     didOpen: () => { Swal.showLoading(); } 
                 });
+
+                // Membuat nama fungsi unik untuk menangkap data
+                const callbackName = 'elinaJsonpCallback_' + Math.round(100000 * Math.random());
                 
-                return new Promise((resolve) => {
-                    const callbackName = 'elinaJsonpCallback_' + Math.round(100000 * Math.random());
-                    
-                    window[callbackName] = function(data) {
-                        if (isValidElinaDB(data)) { 
-                            db = data; 
-                            localStorage.setItem('elina_github_db', JSON.stringify(db)); 
-                            console.log("Sinkronisasi cloud sukses!");
-                        } else {
-                            console.warn("Format data cloud tidak valid, menggunakan backup lokal.");
-                            loadLocalFallback();
-                        }
-                        cleanup();
-                        resolve();
-                    };
-
-                    const script = document.createElement('script');
-                    script.id = callbackName;
-                    // Menambahkan callback agar ditangkap oleh doGet Google Apps Script
-                    script.src = SCRIPT_URL + "?callback=" + callbackName + "&t=" + new Date().getTime();
-                    
-                    script.onerror = function() {
-                        console.warn("Gagal sinkron cloud, menggunakan data lokal.");
-                        loadLocalFallback(); 
-                        cleanup();
-                        resolve();
-                    };
-                    
-                    document.body.appendChild(script);
-
-                    function cleanup() {
-                        Swal.close();
-                        delete window[callbackName];
-                        const s = document.getElementById(callbackName);
-                        if (s) s.remove();
+                // Fungsi ini akan dieksekusi otomatis saat data dari Google tiba
+                window[callbackName] = function(data) {
+                    if (isValidElinaDB(data)) { 
+                        db = data; 
+                        localStorage.setItem('elina_github_db', JSON.stringify(db)); 
+                        console.log("Sinkronisasi cloud sukses!");
+                    } else {
+                        console.warn("Format data cloud tidak valid, menggunakan backup lokal.");
+                        loadLocalFallback();
                     }
-                });
-            } else { 
-                loadLocalFallback(); 
-            }
+                    cleanup();
+                    updateLoginDropdowns(); // MEMAKSA DROPDOWN MUNCUL SETELAH DATA MASUK
+                    resolve();
+                };
+
+                // Teknik menyuntikkan script tag untuk menembus keamanan Browser HP (CORS Bypass)
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = SCRIPT_URL + "?callback=" + callbackName + "&t=" + new Date().getTime();
+                
+                // Jika gagal (misal tidak ada internet)
+                script.onerror = function() {
+                    console.warn("Gagal sinkron cloud, menggunakan data lokal.");
+                    loadLocalFallback(); 
+                    cleanup();
+                    updateLoginDropdowns();
+                    resolve();
+                };
+                
+                document.body.appendChild(script);
+
+                function cleanup() {
+                    Swal.close();
+                    delete window[callbackName];
+                    const s = document.getElementById(callbackName);
+                    if (s) s.remove();
+                }
+            });
         }
 
         function loadLocalFallback() {

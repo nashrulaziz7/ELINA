@@ -350,7 +350,8 @@
 
     <!-- JAVASCRIPT SYSTEM LOGIC -->
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx8dJ2R2Eegcp4pM8YU1Ufzm4bvV7sZQsaR0GqjbApVWsPFOcXP-xE6ZPM-1RzAY0X/exec"; 
+        // ⚠️ PENTING: MASUKKAN URL GOOGLE APPS SCRIPT YANG BARU DI SINI
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzquw_FfHBMfJpcje4Ld56dzIVfdH_eDDCcrZ4BvAgyogzsduncJGBAQ9jGLxRVHTN0Ww/exec"; 
         
         let db = { 
             config: { defaultNominal: {} }, 
@@ -392,8 +393,6 @@
             return str.toString().trim().toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
         }
 
-        // --- EXPLICIT DATA VALIDATION GUARDRAILS ---
-        // Prevents empty, incomplete or corrupt database sync to local / cloud
         function isValidElinaDB(data) {
             return data && 
                    data.users && 
@@ -423,7 +422,7 @@
             clockEl.textContent = new Date().toLocaleDateString('id-ID', options) + " WIB";
         }
 
-        // Secure persistence simulation with Cloud fallback
+        // Fungsi baru menggunakan fetch murni agar dapat melewati pembatasan CORS saat membaca data
         async function loadCloudDB() {
             if (SCRIPT_URL && SCRIPT_URL.includes("script.google.com")) {
                 try {
@@ -434,16 +433,11 @@
                         didOpen: () => { Swal.showLoading(); } 
                     });
                     
-                    // Prevent browser cache to ensure raw realtime lookup
+                    // Fetch GET request murni, tanpa no-cors, dengan penambahan parameter waktu untuk bypass cache
                     const response = await fetch(SCRIPT_URL + "?t=" + new Date().getTime()); 
                     if (!response.ok) throw new Error("Jaringan bermasalah");
-                    const text = await response.text(); 
+                    const cloudDB = await response.json(); // Mengambil langsung sebagai JSON
                     
-                    if (text.trim().startsWith("<") || text.trim() === "") {
-                        throw new Error("Akses Ditolak/Data Masih Kosong");
-                    }
-                    
-                    const cloudDB = JSON.parse(text);
                     if (isValidElinaDB(cloudDB)) { 
                         db = cloudDB; 
                         localStorage.setItem('elina_github_db', JSON.stringify(db)); 
@@ -470,7 +464,6 @@
             if (parsedLocal && isValidElinaDB(parsedLocal)) { 
                 db = parsedLocal; 
             } else {
-                // SEED DEFAULT STABLE STRUCTURE TO PREVENT `--` BLANK DROPDOWNS
                 db.users.wali = [
                     { kelas: '4D', nama: 'Budi Santoso, S.Pd.', kode: '123' },
                     { kelas: '3D', nama: 'Siti Aminah, M.Pd.', kode: '123' }
@@ -508,8 +501,9 @@
         let isSyncing = false;
         let pendingSync = false;
 
-        async function saveDB() {
-            if (!isValidElinaDB(db)) {
+        // Fungsi baru saveDB yang mengirim payload spesifik sesuai dengan peran untuk menghindari data saling timpa
+        async function saveDB(isResetTotal = false) {
+            if (!isValidElinaDB(db) && !isResetTotal) {
                 console.error("Mencegah penyimpanan data corrupt/kosong.");
                 return false;
             }
@@ -523,20 +517,50 @@
                 }
                 isSyncing = true;
                 showSyncingUI();
+                
+                // Siapkan Payload (Paket Data) berdasarkan Role Login
+                let payload = {};
+                
+                if (isResetTotal) {
+                    payload = { action: 'reset_db' };
+                } 
+                else if (session.role === 'wali') {
+                    // WALI KELAS HANYA MENGIRIM DATA KELASNYA SAJA! Anti-timpa!
+                    let kls = session.user.kelas;
+                    payload = {
+                        action: 'update_kelas',
+                        kelas: kls,
+                        infaq: db.infaq[kls] || {},
+                        pengeluaran: db.pengeluaran[kls] || []
+                    };
+                } 
+                else {
+                    // ADMIN MENGIRIM SEMUA PERUBAHAN (Konfigurasi, Tambah Murid, dsb)
+                    payload = {
+                        action: 'full_sync',
+                        data: db
+                    };
+                }
+
                 try {
-                    await fetch(SCRIPT_URL, { 
+                    // Mengirim POST request. Menggunakan text/plain agar tidak terblokir Preflight CORS
+                    const response = await fetch(SCRIPT_URL, { 
                         method: 'POST', 
-                        mode: 'no-cors', 
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                        body: JSON.stringify(db) 
+                        body: JSON.stringify(payload) 
                     });
                     
+                    const result = await response.json();
+                    
                     let el = document.getElementById('sync-indicator');
-                    if(el) { 
+                    if(el && result.status === 'success') { 
                         el.innerHTML = '<i class="fas fa-check text-green-500"></i> Tersinkron'; 
                         el.classList.replace('text-blue-900', 'text-green-600'); 
                         setTimeout(hideSyncingUI, 1500); 
+                    } else {
+                        throw new Error("Server mengembalikan status error");
                     }
+                    
                     isSyncing = false;
                     if (pendingSync) {
                         pendingSync = false;
@@ -544,6 +568,7 @@
                     }
                     return true;
                 } catch (error) {
+                    console.error("Sync Error:", error);
                     let el = document.getElementById('sync-indicator');
                     if(el) { 
                         el.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i> Offline Mode'; 
@@ -733,6 +758,52 @@
             session = { role: null, user: null }; 
             sessionStorage.removeItem('elina_session'); 
             routeView(); 
+        }
+
+        function getNominalKelas(kls) {
+            return db.config.defaultNominal[kls] || 0;
+        }
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        function getLocalYYYYMMDD(date) {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            return (new Date(date - tzoffset)).toISOString().slice(0, 10);
+        }
+
+        function formatMonthID(yyyy_mm) {
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const p = yyyy_mm.split('-');
+            return `${months[parseInt(p[1])-1]} ${p[0]}`;
+        }
+        
+        function formatDateID(yyyy_mm_dd) {
+            const p = yyyy_mm_dd.split('-');
+            return `${p[2]}/${p[1]}/${p[0]}`;
+        }
+
+        function getFridaysFromAcademicYear() {
+            let today = new Date();
+            let currentYear = today.getFullYear();
+            let currentMonth = today.getMonth() + 1; // 1-12
+            
+            let startYear = (currentMonth >= 7) ? currentYear : currentYear - 1;
+            let endYear = startYear + 1;
+
+            let fridays = [];
+            let startDate = new Date(startYear, 6, 1); // 1 Juli
+            let endDate = new Date(endYear, 5, 30); // 30 Juni
+            
+            let d = new Date(startDate.getTime());
+            d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7); // Cari Jumat pertama
+            
+            while (d <= endDate) {
+                fridays.push(new Date(d.getTime()));
+                d.setDate(d.getDate() + 7);
+            }
+            return fridays;
         }
 
         // =======================================================
@@ -1666,7 +1737,8 @@
                     db.users.wali = []; db.users.murid = []; db.config.defaultNominal = {}; db.infaq = {}; db.pengeluaran = {};
                     
                     Swal.fire({ title: 'Menghapus Cloud Spreadsheet...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                    await saveDB(); 
+                    // Memanggil fungsi saveDB dengan flag parameter "true"
+                    await saveDB(true); 
                     setupAdminView();
                     
                     Swal.fire({icon: 'success', title: 'Database Kosong!', text: 'Silakan upload file template Excel baru.', showConfirmButton: false, timer: 2000, customClass: {popup: 'rounded-2xl w-[75%]'}});
